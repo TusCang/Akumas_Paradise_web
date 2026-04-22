@@ -16,8 +16,6 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.6;overflow-x:hidden;}
-/* ... (中間省略你原本數百行的 CSS，請確保在你的檔案中保留它們) ... */
-/* 為了範例完整，這裡我精簡顯示，但你貼上時請用你原本完整的 CSS */
 nav{background:var(--bg2);padding:0 24px;height:64px;display:flex;align-items:center;gap:32px;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;}
 .nav-l{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem;color:var(--orange);letter-spacing:0.5px;}
 .nav-m{display:flex;gap:8px;flex:1;}
@@ -28,7 +26,35 @@ nav{background:var(--bg2);padding:0 24px;height:64px;display:flex;align-items:ce
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .card{background:var(--bg2);border-radius:var(--r2);padding:24px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid var(--bdr3);margin-bottom:24px;}
-/* ... 保持你原本所有的 CSS 到結尾 ... */
+h2{font-size:1.4rem;font-weight:900;color:var(--tx);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+h3{font-size:1.1rem;font-weight:800;color:var(--tx2);margin-bottom:16px;}
+table{width:100%;border-collapse:separate;border-spacing:0;}
+th{background:var(--bg);padding:12px 16px;text-align:left;font-size:0.85rem;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bdr3);}
+td{padding:14px 16px;border-bottom:1px solid var(--bg);font-size:0.95rem;color:var(--tx2);}
+tr:hover td{background:rgba(244,245,247,0.5);}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:var(--r);border:none;font-weight:700;cursor:pointer;transition:all 0.2s;font-size:0.9rem;gap:8px;}
+.btn-p{background:var(--orange);color:white;}
+.btn-p:hover{background:var(--orange-l);transform:translateY(-1px);box-shadow:0 4px 12px var(--orange-g);}
+.btn-s{background:var(--blue);color:white;}
+.btn-s:hover{background:var(--blue-l);}
+.btn-d{background:var(--bg3);color:var(--tx2);}
+.btn-sm{padding:6px 12px;font-size:0.8rem;}
+input,select,textarea{width:100%;padding:11px 15px;border:1px solid var(--bdr3);border-radius:var(--r);font-family:inherit;font-size:0.95rem;margin-bottom:16px;transition:all 0.2s;}
+input:focus,select:focus{outline:none;border-color:var(--orange);background:white;box-shadow:0 0 0 4px var(--orange-g);}
+.form-g{margin-bottom:20px;}
+.form-l{display:block;font-size:0.85rem;font-weight:700;color:var(--tx2);margin-bottom:6px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
+.pi{border:1px solid var(--bdr3);border-radius:var(--r);padding:16px;margin-bottom:12px;transition:0.2s;}
+.pi:hover{border-color:var(--orange);background:var(--bg);}
+.pi-name{font-weight:800;font-size:1rem;color:var(--tx);margin-bottom:4px;}
+.pi-meta{font-size:0.8rem;color:var(--tx3);display:flex;gap:12px;}
+.badge{padding:3px 8px;border-radius:6px;font-size:0.75rem;font-weight:800;}
+.bg-p{background:var(--orange-g);color:var(--orange);}
+.bg-s{background:var(--blue-glow);color:var(--blue);}
+#toast{position:fixed;bottom:32px;right:32px;padding:16px 24px;border-radius:var(--r);background:var(--tx);color:white;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.15);display:none;z-index:2000;animation:slideIn 0.3s ease;}
+@keyframes slideIn{from{transform:translateX(50px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.empty{text-align:center;padding:48px 0;color:var(--tx3);}
+.empty .ic{font-size:2rem;margin-bottom:12px;opacity:0.5;}
 </style>
 </head>
 <body>
@@ -45,94 +71,227 @@ nav{background:var(--bg2);padding:0 24px;height:64px;display:flex;align-items:ce
 
 <div id="p-home" class="page active">
   <div class="card">
-    <h2 style="margin-bottom:20px;display:flex;align-items:center;gap:10px">🏆 成員積分總表</h2>
+    <h2>🏆 成員積分總表</h2>
     <div id="member-list"></div>
+  </div>
+</div>
+
+<div id="p-report" class="page">
+  <div class="card">
+    <h2>📝 任務申報</h2>
+    <div class="form-g">
+      <label class="form-l">申報玩家名稱</label>
+      <input type="text" id="rep-name" placeholder="請輸入你的遊戲 ID">
+    </div>
+    <div class="form-g">
+      <label class="form-l">任務類型</label>
+      <select id="rep-type" onchange="toggleGraid()">
+        <option value="weekly">Weekly Objective (個人)</option>
+        <option value="graid">Graid (四人小隊)</option>
+      </select>
+    </div>
+    <div id="graid-inputs" style="display:none">
+      <div class="grid" style="margin-bottom:16px">
+        <div><label class="form-l">隊友 2</label><input type="text" id="rep-p2"></div>
+        <div><label class="form-l">隊友 3</label><input type="text" id="rep-p3"></div>
+        <div><label class="form-l">隊友 4</label><input type="text" id="rep-p4"></div>
+      </div>
+    </div>
+    <div class="form-g">
+      <label class="form-l">證明截圖連結 (Imgur/Discord)</label>
+      <input type="url" id="rep-link" placeholder="https://...">
+    </div>
+    <button class="btn btn-p" style="width:100%" onclick="submitReport()">提交申報申請</button>
+  </div>
+</div>
+
+<div id="p-redeem" class="page">
+  <div class="card">
+    <h2>🎁 獎勵兌換</h2>
+    <div id="reward-list" class="grid"></div>
+  </div>
+</div>
+
+<div id="p-admin" class="page">
+  <div id="admin-login" class="card">
+    <h2>🔒 管理員驗證</h2>
+    <input type="password" id="admin-pw" placeholder="請輸入管理密碼">
+    <button class="btn btn-s" style="width:100%" onclick="adminLogin()">登入管理後台</button>
+  </div>
+  <div id="admin-panel" style="display:none">
+    <div class="grid">
+      <div class="card">
+        <h3>📋 待審核申報</h3>
+        <div id="a-replist"></div>
+      </div>
+      <div class="card">
+        <h3>📦 待處理兌換</h3>
+        <div id="a-rdmlist"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>👥 成員與積分管理</h3>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <input type="text" id="new-m-name" placeholder="玩家名稱" style="margin:0">
+        <button class="btn btn-p" onclick="addM()">新增成員</button>
+      </div>
+      <div id="a-mlist"></div>
+    </div>
+    <div class="card">
+      <h3>⚡ 匯入 Guild XP (20M = 1pt)</h3>
+      <p style="font-size:0.8rem;color:var(--tx3);margin-bottom:10px">格式：名稱,XP值 (每行一人)</p>
+      <textarea id="xp-csv" rows="5" placeholder="Erwin,40000000&#10;Steven,20000000"></textarea>
+      <button class="btn btn-s" onclick="importXP()">批次增加積分</button>
+    </div>
+    <div class="card">
+      <h3>🛠️ 獎勵項目編輯</h3>
+      <div id="a-rwlist"></div>
+      <button class="btn btn-d" style="width:100%;margin-top:16px" onclick="addRw()">+ 新增獎勵項目</button>
+    </div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
-    authDomain: "akuma-paradise-db.firebaseapp.com",
-    projectId: "akuma-paradise-db",
-    databaseURL: "https://akuma-paradise-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-    storageBucket: "akuma-paradise-db.firebasestorage.app",
-    messagingSenderId: "616381678361",
-    appId: "1:616381678361:web:c27afc23b5cada9756fb88"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
+  authDomain: "akuma-paradise-db.firebaseapp.com",
+  projectId: "akuma-paradise-db",
+  databaseURL: "https://akuma-paradise-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: "akuma-paradise-db.firebasestorage.app",
+  messagingSenderId: "616381678361",
+  appId: "1:616381678361:web:c27afc23b5cada9756fb88"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  // 將 Firebase 方法掛載到 window，讓你原本寫在 HTML tag 裡的 onclick 函式能抓到
-  window.fb = { db, ref, set, get, onValue, update };
+// 核心資料連結
+const gM = () => window.m || [];
+const sM = (d) => set(ref(db, 'members'), d);
+const gRw = () => window.rw || [];
+const sRw = (d) => set(ref(db, 'rewards'), d);
+const gRp = () => window.rp || [];
+const sRp = (d) => set(ref(db, 'reports'), d);
+const gRd = () => window.rd || [];
+const sRd = (d) => set(ref(db, 'redeems'), d);
 
-  // ============================================================
-  //  核心修改區：將原本的讀取與儲存改為雲端版
-  // ============================================================
+// 監聽雲端變動
+onValue(ref(db, 'members'), s => { window.m = s.val() || []; renderHome(); if(window.isA) renderAM(); });
+onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
+onValue(ref(db, 'reports'), s => { window.rp = s.val() || []; if(window.isA) renderARp(); });
+onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; if(window.isA) renderARd(); });
 
-  // 1. 替換原本的 get/save 函式
-  window.gM = () => window.membersData || [];
-  window.sM = (data) => set(ref(db, 'members'), data);
+// 初始化
+window.isA = false;
+const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
+const fmt = t => new Date(t).toLocaleString();
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function toast(m,t='info'){ 
+  const el=document.getElementById('toast'); el.innerText=m; el.style.display='block';
+  el.style.background = t==='success'?'#2ecc71':(t==='error'?'#e74c3c':'#1A1E2A');
+  setTimeout(()=>el.style.display='none',3000);
+}
 
-  window.gRw = () => window.rewardsData || [];
-  window.sRw = (data) => set(ref(db, 'rewards'), data);
+// 導航
+window.navTo = function(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-i').forEach(i=>i.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  document.getElementById('n-'+id).classList.add('active');
+}
 
-  window.gRp = () => window.reportsData || [];
-  window.sRp = (data) => set(ref(db, 'reports'), data);
+// 頁面渲染：首頁
+function renderHome(){
+  const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
+  const el = document.getElementById('member-list');
+  el.innerHTML = list.length ? `<table><tr><th>排名</th><th>成員名稱</th><th>總積分</th><th>XP</th><th>Weekly</th><th>Graid</th><th>紅利</th></tr>` + 
+    list.map((m,i)=>`<tr><td>${i+1}</td><td style="font-weight:800">${esc(m.name)}</td><td><span class="badge bg-p">${pts(m).toFixed(1)}</span></td><td>${(m.ptsXP||0).toFixed(1)}</td><td>${m.ptsWeekly||0}</td><td>${m.ptsGraid||0}</td><td>${m.ptsBonus||0}</td></tr>`).join('') + `</table>`
+    : `<div class="empty">暫無成員資料</div>`;
+}
 
-  window.gRd = () => window.redeemsData || [];
-  window.sRd = (data) => set(ref(db, 'redeems'), data);
+// 申報邏輯
+window.toggleGraid = () => document.getElementById('graid-inputs').style.display = document.getElementById('rep-type').value==='graid'?'block':'none';
+window.submitReport = () => {
+  const name=document.getElementById('rep-name').value, type=document.getElementById('rep-type').value, link=document.getElementById('rep-link').value;
+  if(!name || !link) return toast('請填寫完整資訊','error');
+  const p = [name]; if(type==='graid') p.push(document.getElementById('rep-p2').value, document.getElementById('rep-p3').value, document.getElementById('rep-p4').value);
+  const rp = gRp(); rp.push({ id:Date.now(), name, type, link, players:p.filter(x=>x), status:'pending', ts:Date.now() });
+  sRp(rp); toast('申報已送出，請等待審核','success'); navTo('home');
+};
 
-  // 2. 啟動即時監聽（這就是讓網頁變動態的關鍵）
-  onValue(ref(db, 'members'), (snap) => {
-    window.membersData = snap.val() || [];
-    renderHome(); // 只要雲端數據變了，就自動呼叫你原本的渲染函式
-    if(document.getElementById('p-admin').classList.contains('active')) renderAdminMembers();
+// 兌換邏輯
+function renderRedeem(){
+  const el = document.getElementById('reward-list');
+  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><h3>${esc(r.name)}</h3><div style="font-size:1.2rem;font-weight:900;color:var(--orange)">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0">庫存: ${r.stock}</div><button class="btn btn-p" style="width:100%" onclick="doRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'立即兌換'}</button></div>`).join('');
+}
+window.doRedeem = (rid) => {
+  const name = prompt('請輸入您的玩家名稱以供核對：'); if(!name) return;
+  const m = gM().find(x=>x.name===name); if(!m) return toast('找不到該成員','error');
+  const rw = gRw().find(x=>x.id===rid);
+  if(pts(m) < rw.cost) return toast('積分不足','error');
+  const rd = gRd(); rd.push({ id:Date.now(), playerId:m.id, playerName:m.name, rewardId:rw.id, rewardName:rw.name, cost:rw.cost, status:'pending', ts:Date.now() });
+  sRd(rd); toast('兌換申請已送出','success');
+};
+
+// 管理員功能
+window.adminLogin = () => {
+  if(document.getElementById('admin-pw').value==='akuma888'){
+    window.isA=true; document.getElementById('admin-login').style.display='none'; document.getElementById('admin-panel').style.display='block';
+    renderAM(); renderARp(); renderARd(); renderARw();
+  } else toast('密碼錯誤','error');
+};
+
+function renderAM(){
+  const el=document.getElementById('a-mlist');
+  el.innerHTML = gM().map(m=>`<div class="pi" style="display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b> (Total: ${pts(m).toFixed(1)})</div><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div>`).join('');
+}
+window.addM = () => { const n=document.getElementById('new-m-name').value; if(!n) return; const m=gM(); m.push({id:Date.now(),name:n,ptsXP:0,ptsWeekly:0,ptsGraid:0,ptsBonus:0,wCount:0}); sM(m); document.getElementById('new-m-name').value=''; };
+window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
+
+window.importXP = () => {
+  const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
+  lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx) tx.ptsXP=(tx.ptsXP||0)+(parseFloat(v)/20000000); });
+  sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
+};
+
+function renderARp(){
+  const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
+  el.innerHTML = rp.map(r=>`<div class="pi"><div><b>${r.type}</b> - ${r.name}</div><div class="pi-meta"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:8px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '暫無申報';
+}
+window.appRep = (id) => {
+  const rps=gRp(), r=rps.find(x=>x.id===id), m=gM();
+  r.players.forEach(pname=>{
+    const tx=m.find(x=>x.name===pname); if(!tx) return;
+    if(r.type==='graid') tx.ptsGraid=(tx.ptsGraid||0)+2;
+    else {
+      tx.ptsWeekly=(tx.ptsWeekly||0)+5; tx.wCount=(tx.wCount||0)+1;
+      if(tx.wCount===2) tx.ptsBonus=(tx.ptsBonus||0)+7;
+      if(tx.wCount===4) tx.ptsBonus=(tx.ptsBonus||0)+15;
+    }
   });
+  r.status='approved'; sRp(rps); sM(m); toast('核准成功','success');
+};
 
-  onValue(ref(db, 'rewards'), (snap) => {
-    window.rewardsData = snap.val() || [];
-    renderRedeem();
-    if(document.getElementById('p-admin').classList.contains('active')) renderAdminRewards();
-  });
+function renderARd(){
+  const rd=gRd().filter(x=>x.status==='pending'), el=document.getElementById('a-rdmlist');
+  el.innerHTML = rd.map(r=>`<div class="pi"><div>${r.playerName} → ${r.rewardName}</div><div style="margin-top:8px"><button class="btn btn-p btn-sm" onclick="appRd(${r.id})">發放</button></div></div>`).join('') || '暫無兌換';
+}
+window.appRd = (id) => {
+  const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
+  let d=r.cost; ['ptsBonus','ptsXP','ptsWeekly','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
+  if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('獎勵已發放','success');
+};
 
-  onValue(ref(db, 'reports'), (snap) => {
-    window.reportsData = snap.val() || [];
-    if(document.getElementById('p-admin').classList.contains('active')) renderAdminReports();
-  });
-
-  onValue(ref(db, 'redeems'), (snap) => {
-    window.redeemsData = snap.val() || [];
-    if(document.getElementById('p-admin').classList.contains('active')) renderARd();
-  });
-
-  // 3. 初始頁面
-  setTimeout(() => navTo('home'), 500);
-
-  // ============================================================
-  //  這裡開始請貼上你原本檔案中所有的 JavaScript Functions
-  //  (例如 navTo, renderHome, pts, fmt, submitReport, approveReport 等)
-  //  因為我已經修改了 gM/sM 函式，你原本的邏輯會自動對接到 Firebase
-  // ============================================================
-
-  window.navTo = function(id) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-i').forEach(i=>i.classList.remove('active'));
-    document.getElementById('p-'+id).classList.add('active');
-    document.getElementById('n-'+id).classList.add('active');
-    if(id==='home') renderHome();
-    if(id==='redeem') renderRedeem();
-    if(id==='admin' && window.isAdmin) renderAdmin();
-  }
-
-  // ... 其餘你原本的 400 多行 JS 函式請原封不動放在這裡 ...
-  // 記得在所有的 saveMembers(m) 之後，它會自動呼叫我上面的雲端版本 sM(data)
+function renderARw(){
+  document.getElementById('a-rwlist').innerHTML = gRw().map(r=>`<div class="pi"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock} <button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('');
+}
+window.addRw = () => { const n=prompt('名稱'), c=prompt('分數'), s=prompt('庫存'); if(n&&c&&s){ const r=gRw(); r.push({id:Date.now(),name:n,cost:parseInt(c),stock:parseInt(s)}); sRw(r); } };
+window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
 
 </script>
 </body>
