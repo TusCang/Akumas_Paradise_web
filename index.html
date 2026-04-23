@@ -25,7 +25,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);backd
 .logo-title{font-size:15px;font-weight:700;color:var(--tx);}
 .logo-sub{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
 nav{display:flex;gap:2px;margin-left:auto;}
-nav button{background:none;border:none;color:var(--tx2);font-family:var(--font);font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+nav button{background:none;border:none;color:var(--tx2);font-family:var(--font);font-size:15px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;}
 nav button:hover{color:var(--tx);background:rgba(0,0,0,0.05);}
 nav button.active{color:var(--orange);background:rgba(232,80,10,0.08);}
 #admin-toggle-btn{margin-left:8px;padding:7px 14px;border-radius:8px;border:1px solid var(--bdr2);background:rgba(20,120,204,0.07);color:var(--blue-l);font-family:var(--font);font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;}
@@ -37,7 +37,7 @@ main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
 .page.active{display:block;animation:fadeIn .25s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .page-header{margin-bottom:28px;}
-.page-header h1{font-size:26px;font-weight:700;}
+.page-header h1{text-align:center;font-size:32px;}
 .page-header h1 span{color:var(--orange);}
 .page-header p{margin-top:5px;color:var(--tx2);font-size:14px;}
 
@@ -98,6 +98,23 @@ select option{background:#fff;color:var(--tx);}
 #toast.info{border-color:var(--bdr2);color:var(--blue-d);background:#F0F7FF;}
 
 .modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+
+.hero{text-align:center;padding:52px 20px 36px;}
+.hero-icon{width:76px;height:76px;border-radius:18px;margin:0 auto 22px;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#fff;box-shadow:0 0 36px rgba(232,80,10,.3);}
+.hero h2{font-size:38px;font-weight:900;letter-spacing:-1px;}
+.hero h2 em{font-style:normal;color:var(--orange);}
+.hero p{color:var(--tx2);margin-top:10px;font-size:15px;}
+.hero-btns{display:flex;gap:11px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+
+.ss-wrap{position:relative;}
+.ss-input{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;cursor:text;}
+.ss-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-g);}
+.ss-drop{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:300;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);overflow-y:auto;max-height:200px;box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.ss-drop.open{display:block;}
+.ss-opt{padding:9px 13px;font-size:14px;cursor:pointer;color:var(--tx);transition:background .1s;}
+.ss-opt:hover{background:#FDF5F1;color:var(--orange);}
+.ss-opt.nr{color:var(--tx3);cursor:default;font-size:13px;}
+.ss-opt.nr:hover{background:none;}
 </style>
 </head>
 <body>
@@ -111,8 +128,9 @@ select option{background:#fff;color:var(--tx);}
     </div>
   </a>
   <nav>
-    <button id="n-home" onclick="navTo('home')" class="active">總表</button>
-    <button id="n-report" onclick="navTo('report')">任務申報</button>
+    <button id="n-home" onclick="navTo('home')" class="active">首頁</button>
+    <button id="n-leaderboard" onclick="navTo('leaderboard')">積分總表</button>
+    <button id="n-report" onclick="navTo('report')">申報任務</button>
     <button id="n-redeem" onclick="navTo('redeem')">獎勵兌換</button>
     <button id="n-admin" onclick="navTo('admin')">管理後台</button>
   </nav>
@@ -120,64 +138,91 @@ select option{background:#fff;color:var(--tx);}
 
 <main>
   <div id="p-home" class="page active">
-    <div class="page-header">
-      <h1>🏆 成員<span>積分總表</span></h1>
-      <p>查看所有成員的積分排名與統計</p>
+    <div class="hero">
+      <div class="hero-icon">A</div>
+      <h2>Akuma <em>Paradise</em></h2>
+      <p>Wynncraft 公會積分管理系統 — 追蹤貢獻、兌換獎勵</p>
+      <div class="hero-btns">
+        <button class="btn btn-p" onclick="navTo('leaderboard')">📊 積分排行</button>
+        <button class="btn btn-s" onclick="navTo('report')">📝 申報任務</button>
+        <button class="btn btn-b" onclick="navTo('redeem')">🎁 獎勵清單</button>
+      </div>
     </div>
-    <div class="stats-grid" id="stats-grid"></div>
+    <div class="stats-grid" id="home-stats"></div>
     <div class="card">
-      <div class="card-title">📊 成員排名</div>
+      <div class="card-title">積分計算規則</div>
+      <div class="form-grid g3">
+        <div style="background:#FFF8F5;border:1px solid rgba(232,80,10,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:var(--orange);font-weight:700;font-size:14px;margin-bottom:7px;">⚔️ Graid</div>
+          <div style="font-size:22px;font-weight:900;">+2 <span style="font-size:12px;color:var(--tx3)">pts / 人次</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">每次 Graid 共 4 名玩家各得 2 分</div>
+        </div>
+        <div style="background:#F5F9FF;border:1px solid rgba(20,120,204,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:var(--blue);font-weight:700;font-size:14px;margin-bottom:7px;">🎯 Weekly Obj</div>
+          <div style="font-size:22px;font-weight:900;">+5 <span style="font-size:12px;color:var(--tx3)">pts 基本</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">月內 2 次 +7 額外；4 次 +15 額外</div>
+        </div>
+        <div style="background:#F5FFF7;border:1px solid rgba(20,160,80,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:#0E8A3A;font-weight:700;font-size:14px;margin-bottom:7px;">⭐ Guild XP</div>
+          <div style="font-size:22px;font-weight:900;">+1 <span style="font-size:12px;color:var(--tx3)">pt / 20M XP</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">每月管理員匯入 XP 總表後自動換算</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="p-leaderboard" class="page">
+    <div class="page-header">
+      <h1>積分 <span>總表</span></h1>
+      <p>所有成員目前的積分排行</p>
+    </div>
+    <div class="card">
       <div class="table-wrap">
-        <table id="member-table"></table>
+        <table>
+          <thead><tr><th>#</th><th>玩家名稱</th><th>Graid</th><th>Weekly Obj</th><th>Guild XP</th><th>總積分</th></tr></thead>
+          <tbody id="lb-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <div id="p-report" class="page">
     <div class="page-header">
-      <h1>📝 任務<span>申報</span></h1>
-      <p>提交您的任務完成證明以獲得積分</p>
+      <h1>申報 <span>任務完成</span></h1>
+      <p>完成 Graid 或 Weekly Obj 後申報，管理員審核後計入積分</p>
     </div>
+
     <div class="card">
-      <div class="card-title">提交申報</div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>申報玩家名稱</label>
-          <input type="text" id="rep-name" placeholder="請輸入你的遊戲 ID">
-        </div>
-        <div class="form-row">
-          <label>任務類型</label>
-          <select id="rep-type" onchange="toggleGraid()">
-            <option value="weekly">Weekly Objective (個人)</option>
-            <option value="graid">Graid (四人小隊)</option>
-          </select>
-        </div>
-        <div id="graid-inputs" style="display:none">
-          <div class="section-label">隊友資訊</div>
-          <div class="form-grid g3">
-            <div class="form-row">
-              <label>隊友 2</label>
-              <input type="text" id="rep-p2">
-            </div>
-            <div class="form-row">
-              <label>隊友 3</label>
-              <input type="text" id="rep-p3">
-            </div>
-            <div class="form-row">
-              <label>隊友 4</label>
-              <input type="text" id="rep-p4">
-            </div>
-          </div>
-        </div>
-        <div class="form-row">
-          <label>證明截圖連結 (Imgur/Discord)</label>
-          <input type="url" id="rep-link" placeholder="https://...">
-        </div>
-        <div class="actions-row">
-          <button class="btn btn-p" onclick="submitReport()">提交申報申請</button>
-        </div>
+      <div class="card-title">⚔️ Graid 申報</div>
+      <div class="section-label">本次 Graid 的四名玩家</div>
+      <div class="form-grid g2">
+        <div class="form-row"><label>玩家 1</label><div class="ss-wrap"><input class="ss-input" id="gp1i" placeholder="輸入名字搜尋…" autocomplete="off"><input type="hidden" id="gp1"><div class="ss-drop" id="gp1d"></div></div></div>
+        <div class="form-row"><label>玩家 2</label><div class="ss-wrap"><input class="ss-input" id="gp2i" placeholder="輸入名字搜尋…" autocomplete="off"><input type="hidden" id="gp2"><div class="ss-drop" id="gp2d"></div></div></div>
+        <div class="form-row"><label>玩家 3</label><div class="ss-wrap"><input class="ss-input" id="gp3i" placeholder="輸入名字搜尋…" autocomplete="off"><input type="hidden" id="gp3"><div class="ss-drop" id="gp3d"></div></div></div>
+        <div class="form-row"><label>玩家 4</label><div class="ss-wrap"><input class="ss-input" id="gp4i" placeholder="輸入名字搜尋…" autocomplete="off"><input type="hidden" id="gp4"><div class="ss-drop" id="gp4d"></div></div></div>
       </div>
+      <div id="dup-warn" style="color:#C0281E;font-size:12px;margin-top:8px;display:none">⚠ 有重複玩家</div>
+      <div class="form-row" style="margin-top:14px;">
+        <label>附上截圖證明連結</label>
+        <input type="url" id="graid-link" placeholder="https://...">
+      </div>
+      <div class="actions-row"><button class="btn btn-p" onclick="submitGraid()">✓ 提交 Graid 申報</button></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">🎯 Weekly Obj 申報</div>
+      <div class="form-row" style="max-width:340px;">
+        <label>玩家名稱</label>
+        <div class="ss-wrap"><input class="ss-input" id="wpi" placeholder="輸入名字搜尋…" autocomplete="off"><input type="hidden" id="wp"><div class="ss-drop" id="wpd"></div></div>
+      </div>
+      <div class="form-row" style="margin-top:14px;">
+        <label>附上截圖證明連結</label>
+        <input type="url" id="weekly-link" placeholder="https://...">
+      </div>
+      <div class="actions-row"><button class="btn btn-b" onclick="submitWeekly()">✓ 提交 Weekly Obj 申報</button></div>
+    </div>
+
+    <div class="card"><div class="card-title">📋 待審核申報</div><div id="pending-pub"></div></div>
   </div>
 
   <div id="p-redeem" class="page">
@@ -191,7 +236,7 @@ select option{background:#fff;color:var(--tx);}
     </div>
   </div>
 
-  <div id="p-admin" class="page">
+  <div id="p-admin" class="page" style="border:2px solid rgba(20,120,204,0.2);border-radius:16px;padding:20px;background:rgba(20,120,204,0.02);">
     <div id="admin-login" class="card">
       <div class="card-title">🔒 管理員驗證</div>
       <div class="form-grid">
@@ -283,7 +328,19 @@ const gRd = () => window.rd || [];
 const sRd = (d) => set(ref(db, 'redeems'), d);
 
 // 監聽雲端變動
-onValue(ref(db, 'members'), s => { window.m = s.val() || []; renderHome(); if(window.isA) renderAM(); });
+onValue(ref(db, 'members'), s => { 
+  window.m = s.val() || []; 
+  renderHome(); 
+  if(window.isA) renderAM();
+  // 初始化搜尋功能
+  setTimeout(() => {
+    setupSearchInput('gp1i', 'gp1d', 'gp1');
+    setupSearchInput('gp2i', 'gp2d', 'gp2');
+    setupSearchInput('gp3i', 'gp3d', 'gp3');
+    setupSearchInput('gp4i', 'gp4d', 'gp4');
+    setupSearchInput('wpi', 'wpd', 'wp');
+  }, 100);
+});
 onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
 onValue(ref(db, 'reports'), s => { window.rp = s.val() || []; if(window.isA) renderARp(); });
 onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; if(window.isA) renderARd(); });
@@ -302,7 +359,7 @@ function toast(m,t='info'){
 // 導航
 window.navTo = function(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-i').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('p-'+id).classList.add('active');
   document.getElementById('n-'+id).classList.add('active');
 }
@@ -313,9 +370,8 @@ function renderHome(){
   const totalMembers = list.length;
   const totalPoints = list.reduce((sum, m) => sum + pts(m), 0);
   const avgPoints = totalMembers > 0 ? (totalPoints / totalMembers).toFixed(1) : 0;
-  const topMember = list[0] ? list[0].name : '無';
 
-  const statsEl = document.getElementById('stats-grid');
+  const statsEl = document.getElementById('home-stats');
   statsEl.innerHTML = `
     <div class="stat-card">
       <div class="stat-value">${totalMembers}</div>
@@ -329,16 +385,17 @@ function renderHome(){
       <div class="stat-value">${avgPoints}</div>
       <div class="stat-label">平均積分</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-value">${topMember}</div>
-      <div class="stat-label">積分王</div>
-    </div>
   `;
 
-  const tableEl = document.getElementById('member-table');
-  tableEl.innerHTML = list.length ? `<thead><tr><th>排名</th><th>成員名稱</th><th>總積分</th><th>XP</th><th>Weekly</th><th>Graid</th><th>紅利</th></tr></thead><tbody>` + 
-    list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td style="font-weight:800">${esc(m.name)}</td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${(m.ptsXP||0).toFixed(1)}</td><td>${m.ptsWeekly||0}</td><td>${m.ptsGraid||0}</td><td>${m.ptsBonus||0}</td></tr>`).join('') + `</tbody>`
-    : `<tbody><tr><td colspan="7" style="text-align:center;padding:48px;color:var(--tx3)">暫無成員資料</td></tr></tbody>`;
+  // 同步 leaderboard
+  renderLeaderboard();
+}
+
+function renderLeaderboard(){
+  const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
+  const tbody = document.getElementById('lb-body');
+  tbody.innerHTML = list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td><b>${esc(m.name)}</b></td><td>${m.ptsGraid||0}</td><td>${(m.ptsWeekly||0)+(m.ptsBonus||0)}</td><td>${(m.ptsXP||0).toFixed(1)}</td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td></tr>`).join('')
+    || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
 }
 
 // 申報邏輯
@@ -349,6 +406,74 @@ window.submitReport = () => {
   const p = [name]; if(type==='graid') p.push(document.getElementById('rep-p2').value, document.getElementById('rep-p3').value, document.getElementById('rep-p4').value);
   const rp = gRp(); rp.push({ id:Date.now(), name, type, link, players:p.filter(x=>x), status:'pending', ts:Date.now() });
   sRp(rp); toast('申報已送出，請等待審核','success'); navTo('home');
+};
+
+// 自定義搜尋功能
+const setupSearchInput = (inputId, dropId, hiddenId) => {
+  const input = document.getElementById(inputId);
+  const drop = document.getElementById(dropId);
+  const hidden = document.getElementById(hiddenId);
+  
+  if(!input) return;
+  
+  input.addEventListener('input', () => {
+    const val = input.value.trim().toLowerCase();
+    const members = gM().map(m=>m.name);
+    const matches = val ? members.filter(n=>n.toLowerCase().includes(val)) : [];
+    
+    drop.innerHTML = matches.length 
+      ? matches.map(n=>`<div class="ss-opt" onclick="setSel('${inputId}','${hiddenId}','${n}')">${esc(n)}</div>`).join('')
+      : `<div class="ss-opt nr">找不到玩家</div>`;
+    
+    drop.classList.toggle('open', val.length > 0);
+  });
+  
+  input.addEventListener('focus', () => {
+    if(input.value.trim()) input.dispatchEvent(new Event('input'));
+  });
+};
+
+window.setSel = (inputId, hiddenId, name) => {
+  document.getElementById(inputId).value = name;
+  document.getElementById(hiddenId).value = name;
+  document.getElementById(inputId).parentElement.querySelector('.ss-drop').classList.remove('open');
+};
+
+window.submitGraid = () => {
+  const p1=document.getElementById('gp1').value, p2=document.getElementById('gp2').value, p3=document.getElementById('gp3').value, p4=document.getElementById('gp4').value;
+  const link=document.getElementById('graid-link').value;
+  
+  if(!p1 || !p2 || !p3 || !p4 || !link) return toast('請填寫完整資訊','error');
+  if(new Set([p1,p2,p3,p4]).size !== 4) return toast('有重複玩家','error');
+  
+  const members = gM().map(m=>m.name);
+  if(![p1,p2,p3,p4].every(n=>members.includes(n))) return toast('玩家名稱錯誤','error');
+  
+  const rp = gRp(); 
+  rp.push({ id:Date.now(), players:[p1,p2,p3,p4], type:'graid', link, status:'pending', ts:Date.now() });
+  sRp(rp); 
+  toast('Graid申報已送出','success'); 
+  document.getElementById('gp1i').value=''; document.getElementById('gp1').value='';
+  document.getElementById('gp2i').value=''; document.getElementById('gp2').value='';
+  document.getElementById('gp3i').value=''; document.getElementById('gp3').value='';
+  document.getElementById('gp4i').value=''; document.getElementById('gp4').value='';
+  document.getElementById('graid-link').value='';
+};
+
+window.submitWeekly = () => {
+  const name=document.getElementById('wp').value, link=document.getElementById('weekly-link').value;
+  
+  if(!name || !link) return toast('請填寫完整資訊','error');
+  
+  const members = gM().map(m=>m.name);
+  if(!members.includes(name)) return toast('玩家名稱錯誤','error');
+  
+  const rp = gRp(); 
+  rp.push({ id:Date.now(), players:[name], type:'weekly', link, status:'pending', ts:Date.now() });
+  sRp(rp); 
+  toast('Weekly Obj申報已送出','success'); 
+  document.getElementById('wpi').value=''; document.getElementById('wp').value='';
+  document.getElementById('weekly-link').value='';
 };
 
 // 兌換邏輯
@@ -375,22 +500,19 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b> (Total: ${pts(m).toFixed(1)})</div><div style="display:flex;gap:8px"><button class="btn btn-s btn-sm" onclick="editPoints('${m.name}')">編輯分數</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
+  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b></div><div style="display:flex;gap:8px"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:80px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><button class="btn btn-s btn-sm" onclick="updatePoints('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
 }
 window.addM = () => { const n=document.getElementById('new-m-name').value; if(!n) return; const m=gM(); m.push({id:Date.now(),name:n,ptsXP:0,ptsWeekly:0,ptsGraid:0,ptsBonus:0,wCount:0}); sM(m); document.getElementById('new-m-name').value=''; };
-window.editPoints = (name) => {
+window.updatePoints = (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
-  const xp = prompt('XP 積分:', m.ptsXP||0);
-  const weekly = prompt('Weekly 積分:', m.ptsWeekly||0);
-  const graid = prompt('Graid 積分:', m.ptsGraid||0);
-  const bonus = prompt('紅利積分:', m.ptsBonus||0);
-  if(xp !== null && weekly !== null && graid !== null && bonus !== null) {
-    m.ptsXP = parseFloat(xp)||0;
-    m.ptsWeekly = parseFloat(weekly)||0;
-    m.ptsGraid = parseFloat(graid)||0;
-    m.ptsBonus = parseFloat(bonus)||0;
-    sM(gM());
-  }
+  const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
+  // 將總分數設為Weekly，其餘歸零
+  m.ptsXP = 0;
+  m.ptsWeekly = newPts;
+  m.ptsGraid = 0;
+  m.ptsBonus = 0;
+  sM(gM());
+  toast('分數已更新','success');
 };
 window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
 
@@ -402,7 +524,7 @@ window.importXP = () => {
 
 function renderARp(){
   const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
-  el.innerHTML = rp.map(r=>`<div class="card" style="margin:0"><div><b>${r.type}</b> - ${r.name}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
+  el.innerHTML = rp.map(r=>`<div class="card" style="margin:0"><div><b>${r.type==='graid'?'⚔️ Graid':'🎯 Weekly'}</b> - ${r.players.join(', ')}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
 }
 window.appRep = (id) => {
   const rps=gRp(), r=rps.find(x=>x.id===id), m=gM();
@@ -411,8 +533,8 @@ window.appRep = (id) => {
     if(r.type==='graid') tx.ptsGraid=(tx.ptsGraid||0)+2;
     else {
       tx.ptsWeekly=(tx.ptsWeekly||0)+5; tx.wCount=(tx.wCount||0)+1;
-      if(tx.wCount===2) tx.ptsBonus=(tx.ptsBonus||0)+7;
-      if(tx.wCount===4) tx.ptsBonus=(tx.ptsBonus||0)+15;
+      if(tx.wCount===2) tx.ptsWeekly=(tx.ptsWeekly||0)+7;
+      if(tx.wCount===4) tx.ptsWeekly=(tx.ptsWeekly||0)+15;
     }
   });
   r.status='approved'; sRp(rps); sM(m); toast('核准成功','success');
@@ -424,7 +546,7 @@ function renderARd(){
 }
 window.appRd = (id) => {
   const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
-  let d=r.cost; ['ptsBonus','ptsXP','ptsWeekly','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
+  let d=r.cost; ['ptsWeekly','ptsXP','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
   if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('獎勵已發放','success');
 };
 
