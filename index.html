@@ -37,13 +37,13 @@ main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
 .page.active{display:block;animation:fadeIn .25s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .page-header{margin-bottom:28px;}
-.page-header h1{text-align:center;font-size:32px;}
+.page-header h1{text-align:center;font-size:48px;font-weight:900;letter-spacing:-1px;}
 .page-header h1 span{color:var(--orange);}
-.page-header p{margin-top:5px;color:var(--tx2);font-size:14px;}
+.page-header p{margin-top:8px;color:var(--tx2);font-size:15px;}
 
 .card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r2);padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,0.04);}
-.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
-.card-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--orange);border-radius:2px;}
+.card-title{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;color:var(--orange);margin-bottom:16px;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';display:inline-block;width:3px;height:16px;background:var(--orange);border-radius:2px;}
 
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
 .stat-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
@@ -52,15 +52,22 @@ main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
 .stat-label{font-size:12px;color:var(--tx3);margin-top:5px;}
 
 .table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bdr3);}
-table{width:100%;border-collapse:collapse;font-size:14px;}
+table{width:100%;border-collapse:collapse;font-size:15px;}
 thead{background:#FBF3EE;}
-th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
-td{padding:12px 15px;border-bottom:1px solid #EEF0F5;color:var(--tx);}
+th{padding:14px 15px;text-align:left;font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
+td{padding:13px 15px;border-bottom:1px solid #EEF0F5;color:var(--tx);font-size:15px;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:#FDF5F1;}
 .rb{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:12px;font-weight:700;}
 .r1{background:rgba(255,215,0,.15);color:#D4A800;} .r2{background:rgba(160,160,160,.15);color:#888;} .r3{background:rgba(180,100,30,.15);color:#B46318;} .rn{background:rgba(232,80,10,.07);color:var(--tx3);}
 .pts-pill{display:inline-block;background:linear-gradient(135deg,rgba(232,80,10,.12),rgba(232,80,10,.05));border:1px solid rgba(232,80,10,.28);color:var(--orange-l);padding:3px 10px;border-radius:20px;font-weight:700;font-size:13px;}
+
+.tier-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.5px;}
+.tier-champion{background:rgba(255,215,0,.15);color:#D4A800;}
+.tier-hero-plus{background:rgba(255,182,193,.15);color:#E85B7F;}
+.tier-hero{background:rgba(128,0,128,.15);color:#9932CC;}
+.tier-vip-plus{background:rgba(0,150,255,.15);color:#0066CC;}
+.tier-vip{background:rgba(0,200,100,.15);color:#00A050;}
 
 .form-grid{display:grid;gap:14px;}
 .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;}
@@ -179,7 +186,7 @@ select option{background:#fff;color:var(--tx);}
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>玩家名稱</th><th>Graid</th><th>Weekly Obj</th><th>Guild XP</th><th>總積分</th></tr></thead>
+          <thead><tr><th>#</th><th>職銜</th><th>階級</th><th>玩家名稱</th><th>目前分數</th><th>入會日期</th></tr></thead>
           <tbody id="lb-body"></tbody>
         </table>
       </div>
@@ -265,13 +272,43 @@ select option{background:#fff;color:var(--tx);}
         </div>
       </div>
       <div class="card">
-        <div class="card-title">👥 成員與積分管理</div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label>新增成員</label>
-            <div style="display:flex;gap:10px">
-              <input type="text" id="new-m-name" placeholder="玩家名稱" style="flex:1">
-              <button class="btn btn-p" onclick="addM()">新增成員</button>
+        <div class="card-title">👥 成員與職銜管理</div>
+        <div class="card" style="background:#F8F9FB;border:1px solid rgba(0,0,0,.05);margin-bottom:18px;padding:18px">
+          <div class="card-title" style="margin-bottom:14px;font-size:13px">新增成員表單</div>
+          <div class="form-grid g3">
+            <div class="form-row">
+              <label>玩家名稱</label>
+              <input type="text" id="new-m-name" placeholder="輸入玩家名稱">
+            </div>
+            <div class="form-row">
+              <label>職銜</label>
+              <select id="new-m-rank">
+                <option value="0">會長 (Owner)</option>
+                <option value="1">內院總管 (Chief+)</option>
+                <option value="2">執事 (Strategist)</option>
+                <option value="3">助理 (Captain+)</option>
+                <option value="4">領隊 (Captain)</option>
+                <option value="5">正式成員 (Recruiter)</option>
+                <option value="6" selected>成員 (Recruit)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>階級</label>
+              <select id="new-m-tier">
+                <option value="0">Champion 🟨</option>
+                <option value="1">Hero+ 🌸</option>
+                <option value="2">Hero 💜</option>
+                <option value="3">VIP+ 🔵</option>
+                <option value="4" selected>VIP 💚</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>入會日期</label>
+              <input type="date" id="new-m-date">
+            </div>
+            <div></div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn btn-p" onclick="addM()" style="width:100%">+ 新增成員</button>
             </div>
           </div>
         </div>
@@ -394,7 +431,13 @@ function renderHome(){
 function renderLeaderboard(){
   const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
   const tbody = document.getElementById('lb-body');
-  tbody.innerHTML = list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td><b>${esc(m.name)}</b></td><td>${m.ptsGraid||0}</td><td>${(m.ptsWeekly||0)+(m.ptsBonus||0)}</td><td>${(m.ptsXP||0).toFixed(1)}</td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td></tr>`).join('')
+  const getRankTitle = (rank) => {
+    const ranks = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊'};
+    return ranks[rank] || '成員';
+  };
+  const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
+  
+  tbody.innerHTML = list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${getRankTitle(m.rank)}</td><td>${m.tier||'-'}</td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>`).join('')
     || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
 }
 
@@ -479,15 +522,15 @@ window.submitWeekly = () => {
 // 兌換邏輯
 function renderRedeem(){
   const el = document.getElementById('reward-list');
-  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.2rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin-bottom:12px">庫存: ${r.stock}</div><button class="btn btn-p" onclick="doRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'立即兌換'}</button></div>`).join('');
+  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.2rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin-bottom:12px">庫存: ${r.stock}</div><button class="btn btn-p" onclick="applyRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'兌換申請'}</button></div>`).join('');
 }
-window.doRedeem = (rid) => {
+window.applyRedeem = (rid) => {
   const name = prompt('請輸入您的玩家名稱以供核對：'); if(!name) return;
   const m = gM().find(x=>x.name===name); if(!m) return toast('找不到該成員','error');
   const rw = gRw().find(x=>x.id===rid);
   if(pts(m) < rw.cost) return toast('積分不足','error');
   const rd = gRd(); rd.push({ id:Date.now(), playerId:m.id, playerName:m.name, rewardId:rw.id, rewardName:rw.name, cost:rw.cost, status:'pending', ts:Date.now() });
-  sRd(rd); toast('兌換申請已送出','success');
+  sRd(rd); toast('兌換申請已送出，管理員將聯絡您','success');
 };
 
 // 管理員功能
@@ -500,19 +543,50 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b></div><div style="display:flex;gap:8px"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:80px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><button class="btn btn-s btn-sm" onclick="updatePoints('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
+  const ranks = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊'};
+  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${ranks[m.rank||4]}) - ${m.tier||'初級'}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:100px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${m.rank===0?'selected':''}>會長</option><option value="1" ${m.rank===1?'selected':''}>內院總管</option><option value="2" ${m.rank===2?'selected':''}>執事</option><option value="3" ${m.rank===3?'selected':''}>助理</option><option value="4" ${m.rank===4?'selected':''}>領隊</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
 }
-window.addM = () => { const n=document.getElementById('new-m-name').value; if(!n) return; const m=gM(); m.push({id:Date.now(),name:n,ptsXP:0,ptsWeekly:0,ptsGraid:0,ptsBonus:0,wCount:0}); sM(m); document.getElementById('new-m-name').value=''; };
-window.updatePoints = (name) => {
+window.addM = () => { 
+  const n=document.getElementById('new-m-name').value; 
+  const r=parseInt(document.getElementById('new-m-rank').value)||6;
+  const t=parseInt(document.getElementById('new-m-tier').value)||4;
+  const d=document.getElementById('new-m-date').value;
+  
+  if(!n) return toast('請輸入玩家名稱','error');
+  if(!d) return toast('請選擇入會日期','error');
+  
+  const m=gM(); 
+  m.push({
+    id:Date.now(),
+    name:n,
+    ptsXP:0,
+    ptsWeekly:0,
+    ptsGraid:0,
+    ptsBonus:0,
+    wCount:0,
+    rank:r,
+    tier:t,
+    joinDate:new Date(d).getTime()
+  }); 
+  sM(m); 
+  document.getElementById('new-m-name').value=''; 
+  document.getElementById('new-m-rank').value='6';
+  document.getElementById('new-m-tier').value='4';
+  document.getElementById('new-m-date').value='';
+  toast('成員已新增','success');
+};
+window.updateMember = (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
+  const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
   // 將總分數設為Weekly，其餘歸零
   m.ptsXP = 0;
   m.ptsWeekly = newPts;
   m.ptsGraid = 0;
   m.ptsBonus = 0;
+  m.rank = newRank;
   sM(gM());
-  toast('分數已更新','success');
+  toast('成員資訊已更新','success');
 };
 window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
 
@@ -542,12 +616,18 @@ window.appRep = (id) => {
 
 function renderARd(){
   const rd=gRd().filter(x=>x.status==='pending'), el=document.getElementById('a-rdmlist');
-  el.innerHTML = rd.map(r=>`<div class="card" style="margin:0"><div>${r.playerName} → ${r.rewardName}</div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRd(${r.id})">發放</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無兌換</div>';
+  el.innerHTML = rd.map(r=>`<div class="card" style="margin:0"><div>${r.playerName} → ${r.rewardName} (${r.cost} pts)</div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="deductAndApproveRedeem(${r.id})">扣分並核准</button><button class="btn btn-s btn-sm" onclick="rejectRedeem(${r.id})">拒絕</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無兌換申請</div>';
 }
-window.appRd = (id) => {
+window.deductAndApproveRedeem = (id) => {
   const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
+  if(!mx) return toast('找不到該成員','error');
   let d=r.cost; ['ptsWeekly','ptsXP','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
-  if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('獎勵已發放','success');
+  if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('已扣分並核准','success');
+};
+window.rejectRedeem = (id) => {
+  if(!confirm('確定拒絕此兌換申請？')) return;
+  const rds=gRd(), r=rds.find(x=>x.id===id);
+  r.status='rejected'; sRd(rds); toast('已拒絕申請','success');
 };
 
 function renderARw(){
