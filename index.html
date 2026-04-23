@@ -6,6 +6,7 @@
 <title>Akuma Paradise — Guild Management</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+
 :root {
   --orange:#E8500A; --orange-l:#FF6B2B; --orange-d:#C03D00; --orange-g:rgba(232,80,10,0.15);
   --blue:#1478CC;   --blue-l:#2A90E8;   --blue-d:#0D5FA0;
@@ -15,141 +16,242 @@
   --r:10px; --r2:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.6;overflow-x:hidden;}
-nav{background:var(--bg2);padding:0 24px;height:64px;display:flex;align-items:center;gap:32px;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;}
-.nav-l{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem;color:var(--orange);letter-spacing:0.5px;}
-.nav-m{display:flex;gap:8px;flex:1;}
-.nav-i{padding:8px 16px;cursor:pointer;border-radius:var(--r);font-size:0.95rem;font-weight:500;color:var(--tx2);transition:all 0.2s;}
-.nav-i:hover{background:var(--bg);color:var(--orange);}
-.nav-i.active{background:var(--orange-g);color:var(--orange);font-weight:700;}
-.page{display:none;max-width:1100px;margin:0 auto;padding:32px 24px;animation:fadeIn 0.4s ease;}
-.page.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.card{background:var(--bg2);border-radius:var(--r2);padding:24px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid var(--bdr3);margin-bottom:24px;}
-h2{font-size:1.4rem;font-weight:900;color:var(--tx);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
-h3{font-size:1.1rem;font-weight:800;color:var(--tx2);margin-bottom:16px;}
-table{width:100%;border-collapse:separate;border-spacing:0;}
-th{background:var(--bg);padding:12px 16px;text-align:left;font-size:0.85rem;color:var(--tx3);font-weight:700;border-bottom:1px solid var(--bdr3);}
-td{padding:14px 16px;border-bottom:1px solid var(--bg);font-size:0.95rem;color:var(--tx2);}
-tr:hover td{background:rgba(244,245,247,0.5);}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:var(--r);border:none;font-weight:700;cursor:pointer;transition:all 0.2s;font-size:0.9rem;gap:8px;}
-.btn-p{background:var(--orange);color:white;}
-.btn-p:hover{background:var(--orange-l);transform:translateY(-1px);box-shadow:0 4px 12px var(--orange-g);}
-.btn-s{background:var(--blue);color:white;}
-.btn-s:hover{background:var(--blue-l);}
-.btn-d{background:var(--bg3);color:var(--tx2);}
-.btn-sm{padding:6px 12px;font-size:0.8rem;}
-input,select,textarea{width:100%;padding:11px 15px;border:1px solid var(--bdr3);border-radius:var(--r);font-family:inherit;font-size:0.95rem;margin-bottom:16px;transition:all 0.2s;}
-input:focus,select:focus{outline:none;border-color:var(--orange);background:white;box-shadow:0 0 0 4px var(--orange-g);}
-.form-g{margin-bottom:20px;}
-.form-l{display:block;font-size:0.85rem;font-weight:700;color:var(--tx2);margin-bottom:6px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
-.pi{border:1px solid var(--bdr3);border-radius:var(--r);padding:16px;margin-bottom:12px;transition:0.2s;}
-.pi:hover{border-color:var(--orange);background:var(--bg);}
-.pi-name{font-weight:800;font-size:1rem;color:var(--tx);margin-bottom:4px;}
-.pi-meta{font-size:0.8rem;color:var(--tx3);display:flex;gap:12px;}
-.badge{padding:3px 8px;border-radius:6px;font-size:0.75rem;font-weight:800;}
-.bg-p{background:var(--orange-g);color:var(--orange);}
-.bg-s{background:var(--blue-glow);color:var(--blue);}
-#toast{position:fixed;bottom:32px;right:32px;padding:16px 24px;border-radius:var(--r);background:var(--tx);color:white;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.15);display:none;z-index:2000;animation:slideIn 0.3s ease;}
-@keyframes slideIn{from{transform:translateX(50px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-.empty{text-align:center;padding:48px 0;color:var(--tx3);}
-.empty .ic{font-size:2rem;margin-bottom:12px;opacity:0.5;}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 10% 0%,rgba(232,80,10,0.05) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 90% 100%,rgba(20,120,204,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr);padding:0 28px;display:flex;align-items:center;gap:20px;height:62px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--orange),var(--orange-d));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;box-shadow:0 0 14px var(--orange-g);flex-shrink:0;}
+.logo-title{font-size:15px;font-weight:700;color:var(--tx);}
+.logo-sub{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+nav{display:flex;gap:2px;margin-left:auto;}
+nav button{background:none;border:none;color:var(--tx2);font-family:var(--font);font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+nav button:hover{color:var(--tx);background:rgba(0,0,0,0.05);}
+nav button.active{color:var(--orange);background:rgba(232,80,10,0.08);}
+#admin-toggle-btn{margin-left:8px;padding:7px 14px;border-radius:8px;border:1px solid var(--bdr2);background:rgba(20,120,204,0.07);color:var(--blue-l);font-family:var(--font);font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+#admin-toggle-btn:hover{background:rgba(20,120,204,0.13);}
+#admin-toggle-btn.on{border-color:var(--bdr);color:var(--orange);background:rgba(232,80,10,0.07);}
+
+main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-header{margin-bottom:28px;}
+.page-header h1{font-size:26px;font-weight:700;}
+.page-header h1 span{color:var(--orange);}
+.page-header p{margin-top:5px;color:var(--tx2);font-size:14px;}
+
+.card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r2);padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,0.04);}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--orange);border-radius:2px;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+.stat-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),transparent);}
+.stat-value{font-size:30px;font-weight:900;color:var(--tx);line-height:1;}
+.stat-label{font-size:12px;color:var(--tx3);margin-top:5px;}
+
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bdr3);}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+thead{background:#FBF3EE;}
+th{padding:11px 15px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
+td{padding:12px 15px;border-bottom:1px solid #EEF0F5;color:var(--tx);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#FDF5F1;}
+.rb{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:12px;font-weight:700;}
+.r1{background:rgba(255,215,0,.15);color:#D4A800;} .r2{background:rgba(160,160,160,.15);color:#888;} .r3{background:rgba(180,100,30,.15);color:#B46318;} .rn{background:rgba(232,80,10,.07);color:var(--tx3);}
+.pts-pill{display:inline-block;background:linear-gradient(135deg,rgba(232,80,10,.12),rgba(232,80,10,.05));border:1px solid rgba(232,80,10,.28);color:var(--orange-l);padding:3px 10px;border-radius:20px;font-weight:700;font-size:13px;}
+
+.form-grid{display:grid;gap:14px;}
+.g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr;}}
+.form-row{display:flex;flex-direction:column;}
+label{display:block;font-size:12px;color:var(--tx3);margin-bottom:5px;letter-spacing:.4px;}
+input[type=text],input[type=number],input[type=password],select,textarea{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-g);}
+select option{background:#fff;color:var(--tx);}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-p{background:linear-gradient(135deg,var(--orange),var(--orange-d));color:#fff;box-shadow:0 4px 14px rgba(232,80,10,.28);}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,10,.38);}
+.btn-b{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 4px 14px rgba(20,120,204,.25);}
+.btn-b:hover{transform:translateY(-1px);}
+.btn-s{background:#fff;color:var(--tx);border:1px solid #D0D4DF;}
+.btn-s:hover{background:#F0F2F6;}
+.btn-d{background:rgba(200,40,40,.08);color:#C0281E;border:1px solid rgba(200,40,40,.18);}
+.btn-d:hover{background:rgba(200,40,40,.15);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.actions-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.4px;}
+.tg{background:rgba(232,80,10,.12);color:var(--orange-l);}
+.tw{background:rgba(20,120,204,.12);color:var(--blue-l);}
+.tp{background:rgba(200,160,0,.12);color:#A07800;}
+.ta{background:rgba(20,160,80,.12);color:#0E8A3A;}
+.tr_{background:rgba(200,40,40,.12);color:#C0281E;}
+
+#toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);padding:13px 18px;font-size:14px;min-width:200px;color:var(--tx);box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(16px);opacity:0;transition:all .3s;pointer-events:none;}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.success{border-color:rgba(20,160,80,.35);color:#0E8A3A;background:#F0FBF4;}
+#toast.error{border-color:rgba(200,40,40,.28);color:#C0281E;background:#FFF2F0;}
+#toast.info{border-color:var(--bdr2);color:var(--blue-d);background:#F0F7FF;}
+
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-l">Akuma Paradise</div>
-  <div class="nav-m">
-    <div class="nav-i active" onclick="navTo('home')" id="n-home">總表</div>
-    <div class="nav-i" onclick="navTo('report')" id="n-report">任務申報</div>
-    <div class="nav-i" onclick="navTo('redeem')" id="n-redeem">獎勵兌換</div>
-    <div class="nav-i" onclick="navTo('admin')" id="n-admin">管理後台</div>
-  </div>
-</nav>
-
-<div id="p-home" class="page active">
-  <div class="card">
-    <h2>🏆 成員積分總表</h2>
-    <div id="member-list"></div>
-  </div>
-</div>
-
-<div id="p-report" class="page">
-  <div class="card">
-    <h2>📝 任務申報</h2>
-    <div class="form-g">
-      <label class="form-l">申報玩家名稱</label>
-      <input type="text" id="rep-name" placeholder="請輸入你的遊戲 ID">
+<header>
+  <a href="#" class="logo" onclick="navTo('home')">
+    <div class="logo-icon">A</div>
+    <div>
+      <div class="logo-title">Akuma Paradise</div>
+      <div class="logo-sub">Guild Management</div>
     </div>
-    <div class="form-g">
-      <label class="form-l">任務類型</label>
-      <select id="rep-type" onchange="toggleGraid()">
-        <option value="weekly">Weekly Objective (個人)</option>
-        <option value="graid">Graid (四人小隊)</option>
-      </select>
+  </a>
+  <nav>
+    <button id="n-home" onclick="navTo('home')" class="active">總表</button>
+    <button id="n-report" onclick="navTo('report')">任務申報</button>
+    <button id="n-redeem" onclick="navTo('redeem')">獎勵兌換</button>
+    <button id="n-admin" onclick="navTo('admin')">管理後台</button>
+  </nav>
+</header>
+
+<main>
+  <div id="p-home" class="page active">
+    <div class="page-header">
+      <h1>🏆 成員<span>積分總表</span></h1>
+      <p>查看所有成員的積分排名與統計</p>
     </div>
-    <div id="graid-inputs" style="display:none">
-      <div class="grid" style="margin-bottom:16px">
-        <div><label class="form-l">隊友 2</label><input type="text" id="rep-p2"></div>
-        <div><label class="form-l">隊友 3</label><input type="text" id="rep-p3"></div>
-        <div><label class="form-l">隊友 4</label><input type="text" id="rep-p4"></div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="card">
+      <div class="card-title">📊 成員排名</div>
+      <div class="table-wrap">
+        <table id="member-table"></table>
       </div>
     </div>
-    <div class="form-g">
-      <label class="form-l">證明截圖連結 (Imgur/Discord)</label>
-      <input type="url" id="rep-link" placeholder="https://...">
+  </div>
+
+  <div id="p-report" class="page">
+    <div class="page-header">
+      <h1>📝 任務<span>申報</span></h1>
+      <p>提交您的任務完成證明以獲得積分</p>
     </div>
-    <button class="btn btn-p" style="width:100%" onclick="submitReport()">提交申報申請</button>
+    <div class="card">
+      <div class="card-title">提交申報</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>申報玩家名稱</label>
+          <input type="text" id="rep-name" placeholder="請輸入你的遊戲 ID">
+        </div>
+        <div class="form-row">
+          <label>任務類型</label>
+          <select id="rep-type" onchange="toggleGraid()">
+            <option value="weekly">Weekly Objective (個人)</option>
+            <option value="graid">Graid (四人小隊)</option>
+          </select>
+        </div>
+        <div id="graid-inputs" style="display:none">
+          <div class="section-label">隊友資訊</div>
+          <div class="form-grid g3">
+            <div class="form-row">
+              <label>隊友 2</label>
+              <input type="text" id="rep-p2">
+            </div>
+            <div class="form-row">
+              <label>隊友 3</label>
+              <input type="text" id="rep-p3">
+            </div>
+            <div class="form-row">
+              <label>隊友 4</label>
+              <input type="text" id="rep-p4">
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>證明截圖連結 (Imgur/Discord)</label>
+          <input type="url" id="rep-link" placeholder="https://...">
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-p" onclick="submitReport()">提交申報申請</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="p-redeem" class="page">
-  <div class="card">
-    <h2>🎁 獎勵兌換</h2>
-    <div id="reward-list" class="grid"></div>
+  <div id="p-redeem" class="page">
+    <div class="page-header">
+      <h1>🎁 獎勵<span>兌換</span></h1>
+      <p>使用積分兌換各種獎勵</p>
+    </div>
+    <div class="card">
+      <div class="card-title">可用獎勵</div>
+      <div id="reward-list" class="grid"></div>
+    </div>
   </div>
-</div>
 
-<div id="p-admin" class="page">
-  <div id="admin-login" class="card">
-    <h2>🔒 管理員驗證</h2>
-    <input type="password" id="admin-pw" placeholder="請輸入管理密碼">
-    <button class="btn btn-s" style="width:100%" onclick="adminLogin()">登入管理後台</button>
-  </div>
-  <div id="admin-panel" style="display:none">
-    <div class="grid">
+  <div id="p-admin" class="page">
+    <div id="admin-login" class="card">
+      <div class="card-title">🔒 管理員驗證</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>管理密碼</label>
+          <input type="password" id="admin-pw" placeholder="請輸入管理密碼">
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-b" onclick="adminLogin()">登入管理後台</button>
+        </div>
+      </div>
+    </div>
+    <div id="admin-panel" style="display:none">
+      <div class="page-header">
+        <h1>⚙️ 管理<span>後台</span></h1>
+        <p>管理成員、積分與獎勵系統</p>
+      </div>
+      <div class="form-grid g2">
+        <div class="card">
+          <div class="card-title">📋 待審核申報</div>
+          <div id="a-replist"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📦 待處理兌換</div>
+          <div id="a-rdmlist"></div>
+        </div>
+      </div>
       <div class="card">
-        <h3>📋 待審核申報</h3>
-        <div id="a-replist"></div>
+        <div class="card-title">👥 成員與積分管理</div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>新增成員</label>
+            <div style="display:flex;gap:10px">
+              <input type="text" id="new-m-name" placeholder="玩家名稱" style="flex:1">
+              <button class="btn btn-p" onclick="addM()">新增成員</button>
+            </div>
+          </div>
+        </div>
+        <div id="a-mlist"></div>
       </div>
       <div class="card">
-        <h3>📦 待處理兌換</h3>
-        <div id="a-rdmlist"></div>
+        <div class="card-title">⚡ 匯入 Guild XP (20M = 1pt)</div>
+        <div class="form-row">
+          <label>XP 資料 (格式：名稱,XP值)</label>
+          <textarea id="xp-csv" rows="5" placeholder="Erwin,40000000&#10;Steven,20000000"></textarea>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-b" onclick="importXP()">批次增加積分</button>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <h3>👥 成員與積分管理</h3>
-      <div style="display:flex;gap:10px;margin-bottom:20px">
-        <input type="text" id="new-m-name" placeholder="玩家名稱" style="margin:0">
-        <button class="btn btn-p" onclick="addM()">新增成員</button>
+      <div class="card">
+        <div class="card-title">🛠️ 獎勵項目編輯</div>
+        <div id="a-rwlist"></div>
+        <div class="actions-row">
+          <button class="btn btn-s" onclick="addRw()">+ 新增獎勵項目</button>
+        </div>
       </div>
-      <div id="a-mlist"></div>
-    </div>
-    <div class="card">
-      <h3>⚡ 匯入 Guild XP (20M = 1pt)</h3>
-      <p style="font-size:0.8rem;color:var(--tx3);margin-bottom:10px">格式：名稱,XP值 (每行一人)</p>
-      <textarea id="xp-csv" rows="5" placeholder="Erwin,40000000&#10;Steven,20000000"></textarea>
-      <button class="btn btn-s" onclick="importXP()">批次增加積分</button>
-    </div>
-    <div class="card">
-      <h3>🛠️ 獎勵項目編輯</h3>
-      <div id="a-rwlist"></div>
-      <button class="btn btn-d" style="width:100%;margin-top:16px" onclick="addRw()">+ 新增獎勵項目</button>
     </div>
   </div>
-</div>
+</main>
 
 <div id="toast"></div>
 
@@ -192,9 +294,9 @@ const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus
 const fmt = t => new Date(t).toLocaleString();
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
 function toast(m,t='info'){ 
-  const el=document.getElementById('toast'); el.innerText=m; el.style.display='block';
-  el.style.background = t==='success'?'#2ecc71':(t==='error'?'#e74c3c':'#1A1E2A');
-  setTimeout(()=>el.style.display='none',3000);
+  const el=document.getElementById('toast'); el.innerText=m; el.className=''; el.classList.add(t);
+  el.style.display='block'; el.classList.add('show');
+  setTimeout(()=> { el.classList.remove('show'); setTimeout(()=>el.style.display='none',300); },3000);
 }
 
 // 導航
@@ -208,10 +310,35 @@ window.navTo = function(id){
 // 頁面渲染：首頁
 function renderHome(){
   const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
-  const el = document.getElementById('member-list');
-  el.innerHTML = list.length ? `<table><tr><th>排名</th><th>成員名稱</th><th>總積分</th><th>XP</th><th>Weekly</th><th>Graid</th><th>紅利</th></tr>` + 
-    list.map((m,i)=>`<tr><td>${i+1}</td><td style="font-weight:800">${esc(m.name)}</td><td><span class="badge bg-p">${pts(m).toFixed(1)}</span></td><td>${(m.ptsXP||0).toFixed(1)}</td><td>${m.ptsWeekly||0}</td><td>${m.ptsGraid||0}</td><td>${m.ptsBonus||0}</td></tr>`).join('') + `</table>`
-    : `<div class="empty">暫無成員資料</div>`;
+  const totalMembers = list.length;
+  const totalPoints = list.reduce((sum, m) => sum + pts(m), 0);
+  const avgPoints = totalMembers > 0 ? (totalPoints / totalMembers).toFixed(1) : 0;
+  const topMember = list[0] ? list[0].name : '無';
+
+  const statsEl = document.getElementById('stats-grid');
+  statsEl.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${totalMembers}</div>
+      <div class="stat-label">總成員數</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${totalPoints.toFixed(1)}</div>
+      <div class="stat-label">總積分</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${avgPoints}</div>
+      <div class="stat-label">平均積分</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${topMember}</div>
+      <div class="stat-label">積分王</div>
+    </div>
+  `;
+
+  const tableEl = document.getElementById('member-table');
+  tableEl.innerHTML = list.length ? `<thead><tr><th>排名</th><th>成員名稱</th><th>總積分</th><th>XP</th><th>Weekly</th><th>Graid</th><th>紅利</th></tr></thead><tbody>` + 
+    list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td style="font-weight:800">${esc(m.name)}</td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${(m.ptsXP||0).toFixed(1)}</td><td>${m.ptsWeekly||0}</td><td>${m.ptsGraid||0}</td><td>${m.ptsBonus||0}</td></tr>`).join('') + `</tbody>`
+    : `<tbody><tr><td colspan="7" style="text-align:center;padding:48px;color:var(--tx3)">暫無成員資料</td></tr></tbody>`;
 }
 
 // 申報邏輯
@@ -227,7 +354,7 @@ window.submitReport = () => {
 // 兌換邏輯
 function renderRedeem(){
   const el = document.getElementById('reward-list');
-  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><h3>${esc(r.name)}</h3><div style="font-size:1.2rem;font-weight:900;color:var(--orange)">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0">庫存: ${r.stock}</div><button class="btn btn-p" style="width:100%" onclick="doRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'立即兌換'}</button></div>`).join('');
+  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.2rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin-bottom:12px">庫存: ${r.stock}</div><button class="btn btn-p" onclick="doRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'立即兌換'}</button></div>`).join('');
 }
 window.doRedeem = (rid) => {
   const name = prompt('請輸入您的玩家名稱以供核對：'); if(!name) return;
@@ -248,9 +375,23 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  el.innerHTML = gM().map(m=>`<div class="pi" style="display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b> (Total: ${pts(m).toFixed(1)})</div><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div>`).join('');
+  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(m.name)}</b> (Total: ${pts(m).toFixed(1)})</div><div style="display:flex;gap:8px"><button class="btn btn-s btn-sm" onclick="editPoints('${m.name}')">編輯分數</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
 }
 window.addM = () => { const n=document.getElementById('new-m-name').value; if(!n) return; const m=gM(); m.push({id:Date.now(),name:n,ptsXP:0,ptsWeekly:0,ptsGraid:0,ptsBonus:0,wCount:0}); sM(m); document.getElementById('new-m-name').value=''; };
+window.editPoints = (name) => {
+  const m = gM().find(x=>x.name===name); if(!m) return;
+  const xp = prompt('XP 積分:', m.ptsXP||0);
+  const weekly = prompt('Weekly 積分:', m.ptsWeekly||0);
+  const graid = prompt('Graid 積分:', m.ptsGraid||0);
+  const bonus = prompt('紅利積分:', m.ptsBonus||0);
+  if(xp !== null && weekly !== null && graid !== null && bonus !== null) {
+    m.ptsXP = parseFloat(xp)||0;
+    m.ptsWeekly = parseFloat(weekly)||0;
+    m.ptsGraid = parseFloat(graid)||0;
+    m.ptsBonus = parseFloat(bonus)||0;
+    sM(gM());
+  }
+};
 window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
 
 window.importXP = () => {
@@ -261,7 +402,7 @@ window.importXP = () => {
 
 function renderARp(){
   const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
-  el.innerHTML = rp.map(r=>`<div class="pi"><div><b>${r.type}</b> - ${r.name}</div><div class="pi-meta"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:8px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '暫無申報';
+  el.innerHTML = rp.map(r=>`<div class="card" style="margin:0"><div><b>${r.type}</b> - ${r.name}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
 }
 window.appRep = (id) => {
   const rps=gRp(), r=rps.find(x=>x.id===id), m=gM();
@@ -279,7 +420,7 @@ window.appRep = (id) => {
 
 function renderARd(){
   const rd=gRd().filter(x=>x.status==='pending'), el=document.getElementById('a-rdmlist');
-  el.innerHTML = rd.map(r=>`<div class="pi"><div>${r.playerName} → ${r.rewardName}</div><div style="margin-top:8px"><button class="btn btn-p btn-sm" onclick="appRd(${r.id})">發放</button></div></div>`).join('') || '暫無兌換';
+  el.innerHTML = rd.map(r=>`<div class="card" style="margin:0"><div>${r.playerName} → ${r.rewardName}</div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRd(${r.id})">發放</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無兌換</div>';
 }
 window.appRd = (id) => {
   const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
@@ -288,7 +429,7 @@ window.appRd = (id) => {
 };
 
 function renderARw(){
-  document.getElementById('a-rwlist').innerHTML = gRw().map(r=>`<div class="pi"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock} <button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('');
+  document.getElementById('a-rwlist').innerHTML = gRw().map(r=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('');
 }
 window.addRw = () => { const n=prompt('名稱'), c=prompt('分數'), s=prompt('庫存'); if(n&&c&&s){ const r=gRw(); r.push({id:Date.now(),name:n,cost:parseInt(c),stock:parseInt(s)}); sRw(r); } };
 window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
