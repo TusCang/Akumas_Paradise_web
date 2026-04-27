@@ -48,6 +48,16 @@ main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
 .card-title{font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:1.6px;color:var(--orange);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
 .card-title::before{content:'';display:inline-block;width:4px;height:20px;background:var(--orange);border-radius:3px;}
 
+.card-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.search-box{display:flex;flex-direction:column;gap:6px;min-width:220px;max-width:360px;flex:1;}
+.search-box label{font-size:12px;color:var(--tx3);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.search-box input{width:100%;}
+.sort-hint{font-size:13px;color:var(--tx2);white-space:nowrap;}
+th.sortable{cursor:pointer;user-select:none;}
+th.sortable:hover{color:var(--orange);}
+.sort-arrow{margin-left:4px;font-size:12px;opacity:.6;}
+#lb-body tr.highlight td{background:rgba(232,80,10,0.1);}
+
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
 .stat-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),transparent);}
@@ -198,9 +208,16 @@ select option{background:#fff;color:var(--tx);}
       <p>所有成員目前的積分排行</p>
     </div>
     <div class="card">
+      <div class="card-actions">
+        <div class="search-box">
+          <label for="lb-search">快速搜尋玩家</label>
+          <input id="lb-search" type="text" placeholder="輸入玩家名稱，按 Enter 跳轉" onkeydown="if(event.key==='Enter') findLeaderboard()">
+        </div>
+        <div id="lb-sort-hint" class="sort-hint">目前排序：職銜 正序</div>
+      </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>職銜</th><th>階級</th><th>玩家名稱</th><th>目前分數</th><th>入會日期</th></tr></thead>
+          <thead><tr><th>#</th><th class="sortable" onclick="setLbSort('rank')">職銜 <span class="sort-arrow" id="sort-rank">⇅</span></th><th class="sortable" onclick="setLbSort('tier')">階級 <span class="sort-arrow" id="sort-tier">⇅</span></th><th class="sortable" onclick="setLbSort('name')">玩家名稱 <span class="sort-arrow" id="sort-name">⇅</span></th><th class="sortable" onclick="setLbSort('pts')">目前分數 <span class="sort-arrow" id="sort-pts">⇅</span></th><th class="sortable" onclick="setLbSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-joinDate">⇅</span></th></tr></thead>
           <tbody id="lb-body"></tbody>
         </table>
       </div>
@@ -435,9 +452,66 @@ onValue(ref(db, 'logs'), s => { window.logs = s.val() || []; renderLeaderboard()
 
 // 初始化
 window.isA = false;
+window.lbSort = { key:'rank', dir:'asc' };
+const lbSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'目前分數', joinDate:'入會日期' };
+const tierOrder = { Champion:0, 'Hero+':1, Hero:2, 'VIP+':3, VIP:4 };
 const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
 const fmt = t => new Date(t).toLocaleString();
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const compareLeaderboard = (a,b) => {
+  const key = window.lbSort.key;
+  let cmp = 0;
+  if(key==='rank'){
+    cmp = (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='tier'){
+    cmp = (tierOrder[getTierLabel(a.tier)]||99) - (tierOrder[getTierLabel(b.tier)]||99) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='name'){
+    cmp = a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='pts'){
+    cmp = pts(a) - pts(b) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='joinDate'){
+    cmp = (a.joinDate||0) - (b.joinDate||0) || a.name.localeCompare(b.name,'zh-TW');
+  }
+  return window.lbSort.dir === 'asc' ? cmp : -cmp;
+};
+const updateSortIndicators = () => {
+  ['rank','tier','name','pts','joinDate'].forEach(key => {
+    const el = document.getElementById(`sort-${key}`);
+    if(!el) return;
+    if(window.lbSort.key===key){
+      el.textContent = window.lbSort.dir==='asc' ? '▲' : '▼';
+      el.style.opacity = '1';
+    } else {
+      el.textContent = '⇅';
+      el.style.opacity = '0.4';
+    }
+  });
+  const hint = document.getElementById('lb-sort-hint');
+  if(hint) hint.textContent = `目前排序：${lbSortLabels[window.lbSort.key]} ${window.lbSort.dir==='asc'?'正序':'反序'}`;
+};
+window.setLbSort = (key) => {
+  if(window.lbSort.key === key){
+    window.lbSort.dir = window.lbSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    window.lbSort.key = key;
+    window.lbSort.dir = key === 'pts' ? 'desc' : 'asc';
+  }
+  renderLeaderboard();
+};
+window.findLeaderboard = () => {
+  const query = document.getElementById('lb-search').value.trim().toLowerCase();
+  const rows = Array.from(document.querySelectorAll('#lb-body tr'));
+  rows.forEach(r => r.classList.remove('highlight'));
+  if(!query) return;
+  const found = rows.find(row => (row.dataset.name || '').includes(query));
+  if(found){
+    found.classList.add('highlight');
+    found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    toast('找不到該玩家','error');
+  }
+};
+const escAttr = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const LOG_RETENTION = 1000 * 60 * 60 * 24 * 30;
 const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊',5:'Recruiter',6:'Recruit'};
 const tierLabels = ['Champion','Hero+','Hero','VIP+','VIP'];
@@ -499,12 +573,14 @@ function renderHome(){
 }
 
 function renderLeaderboard(){
-  const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
+  const list = [...gM()].sort(compareLeaderboard);
   const tbody = document.getElementById('lb-body');
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
   
-  tbody.innerHTML = list.map((m,i)=>{ const rank = parseInt(m.rank); return `<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'Recruit'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
+  tbody.innerHTML = list.map((m,i)=>{ const rank = parseInt(m.rank); return `<tr data-name="${escAttr(m.name).toLowerCase()}"><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'Recruit'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
     || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
+
+  updateSortIndicators();
 
   const logEl = document.getElementById('score-log');
   if(logEl){
