@@ -28,6 +28,9 @@ nav{display:flex;gap:2px;margin-left:auto;}
 nav button{background:none;border:none;color:var(--tx2);font-family:var(--font);font-size:15px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;}
 nav button:hover{color:var(--tx);background:rgba(0,0,0,0.05);}
 nav button.active{color:var(--orange);background:rgba(232,80,10,0.08);}
+nav button#n-admin{border:1px solid rgba(20,120,204,0.35);background:rgba(20,120,204,0.08);color:var(--blue-d);}
+nav button#n-admin:hover{background:rgba(20,120,204,0.14);}
+nav button#n-admin.active{border-color:rgba(20,120,204,0.55);background:rgba(20,120,204,0.14);color:var(--blue-d);}
 #admin-toggle-btn{margin-left:8px;padding:7px 14px;border-radius:8px;border:1px solid var(--bdr2);background:rgba(20,120,204,0.07);color:var(--blue-l);font-family:var(--font);font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;}
 #admin-toggle-btn:hover{background:rgba(20,120,204,0.13);}
 #admin-toggle-btn.on{border-color:var(--bdr);color:var(--orange);background:rgba(232,80,10,0.07);}
@@ -37,8 +40,8 @@ main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
 .page.active{display:block;animation:fadeIn .25s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .page-header{margin-bottom:28px;}
-.page-header h1{text-align:center;font-size:48px;font-weight:900;letter-spacing:-1px;}
-.page-header h1 span{color:var(--orange);}
+.page-header h1{text-align:center;font-size:48px;font-weight:900;letter-spacing:-1px;color:var(--tx);}
+.page-header h1 span{color:inherit;}
 .page-header p{margin-top:8px;color:var(--tx2);font-size:15px;}
 
 .card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r2);padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,0.04);}
@@ -111,7 +114,18 @@ select option{background:#fff;color:var(--tx);}
 .hero h2{font-size:38px;font-weight:900;letter-spacing:-1px;}
 .hero h2 em{font-style:normal;color:var(--orange);}
 .hero p{color:var(--tx2);margin-top:10px;font-size:15px;}
-.hero-btns{display:flex;gap:11px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+.hero-btns{display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+.hero-btns .btn{min-width:170px;font-size:16px;padding:14px 24px;}
+
+.score-log-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(216,220,232,0.6);font-size:13px;color:var(--tx);}
+.score-log-item:last-child{border-bottom:none;}
+.score-log-detail{color:var(--tx3);}
+.member-row{margin:0 0 10px 0;padding:10px 12px;border:1px solid rgba(216,220,232,0.6);border-radius:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.member-row div{font-size:13px;}
+.member-row .member-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.member-row select{width:110px;padding:6px;border:1px solid var(--bdr3);border-radius:var(--r);font-size:13px;}
+.member-row input[type=number]{width:70px;padding:6px;border:1px solid var(--bdr3);border-radius:var(--r);font-size:13px;}
+.member-row button{padding:6px 10px;font-size:12px;}
 
 .ss-wrap{position:relative;}
 .ss-input{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;cursor:text;}
@@ -138,7 +152,7 @@ select option{background:#fff;color:var(--tx);}
     <button id="n-home" onclick="navTo('home')" class="active">首頁</button>
     <button id="n-leaderboard" onclick="navTo('leaderboard')">積分總表</button>
     <button id="n-report" onclick="navTo('report')">申報任務</button>
-    <button id="n-redeem" onclick="navTo('redeem')">獎勵兌換</button>
+    <button id="n-redeem" onclick="navTo('redeem')">獎勵展示</button>
     <button id="n-admin" onclick="navTo('admin')">管理後台</button>
   </nav>
 </header>
@@ -191,6 +205,10 @@ select option{background:#fff;color:var(--tx);}
         </table>
       </div>
     </div>
+    <div class="card">
+      <div class="card-title">近 30 天分數紀錄</div>
+      <div id="score-log"></div>
+    </div>
   </div>
 
   <div id="p-report" class="page">
@@ -212,6 +230,10 @@ select option{background:#fff;color:var(--tx);}
       <div class="form-row" style="margin-top:14px;">
         <label>附上截圖證明連結</label>
         <input type="url" id="graid-link" placeholder="https://...">
+        <div style="margin-top:8px;font-size:12px;color:var(--tx3);line-height:1.5;">
+          1. 將截圖貼在 DC 的私人頻道內<br>
+          2. 右鍵複製該圖片的連結，貼上此處即可
+        </div>
       </div>
       <div class="actions-row"><button class="btn btn-p" onclick="submitGraid()">✓ 提交 Graid 申報</button></div>
     </div>
@@ -225,6 +247,10 @@ select option{background:#fff;color:var(--tx);}
       <div class="form-row" style="margin-top:14px;">
         <label>附上截圖證明連結</label>
         <input type="url" id="weekly-link" placeholder="https://...">
+        <div style="margin-top:8px;font-size:12px;color:var(--tx3);line-height:1.5;">
+          1. 將截圖貼在 DC 的私人頻道內<br>
+          2. 右鍵複製該圖片的連結，貼上此處即可
+        </div>
       </div>
       <div class="actions-row"><button class="btn btn-b" onclick="submitWeekly()">✓ 提交 Weekly Obj 申報</button></div>
     </div>
@@ -234,11 +260,11 @@ select option{background:#fff;color:var(--tx);}
 
   <div id="p-redeem" class="page">
     <div class="page-header">
-      <h1>🎁 獎勵<span>兌換</span></h1>
-      <p>使用積分兌換各種獎勵</p>
+      <h1>獎勵展示</h1>
+      <p>線上展示獎勵項目，線下兌換另行處理</p>
     </div>
     <div class="card">
-      <div class="card-title">可用獎勵</div>
+      <div class="card-title">展示內容</div>
       <div id="reward-list" class="grid"></div>
     </div>
   </div>
@@ -258,8 +284,11 @@ select option{background:#fff;color:var(--tx);}
     </div>
     <div id="admin-panel" style="display:none">
       <div class="page-header">
-        <h1>⚙️ 管理<span>後台</span></h1>
+        <h1>⚙️ 管理後台</h1>
         <p>管理成員、積分與獎勵系統</p>
+      </div>
+      <div class="actions-row" style="justify-content:flex-end;margin-bottom:14px;">
+        <button class="btn btn-b btn-sm" onclick="window.open('https://console.firebase.google.com/project/akuma-paradise-db/overview','_blank')">Firebase 控制台</button>
       </div>
       <div class="form-grid g2">
         <div class="card">
@@ -295,11 +324,11 @@ select option{background:#fff;color:var(--tx);}
             <div class="form-row">
               <label>階級</label>
               <select id="new-m-tier">
-                <option value="0">Champion 🟨</option>
-                <option value="1">Hero+ 🌸</option>
-                <option value="2">Hero 💜</option>
-                <option value="3">VIP+ 🔵</option>
-                <option value="4" selected>VIP 💚</option>
+                <option value="Champion">Champion 🟨</option>
+                <option value="Hero+">Hero+ 🌸</option>
+                <option value="Hero">Hero 💜</option>
+                <option value="VIP+">VIP+ 🔵</option>
+                <option value="VIP" selected>VIP 💚</option>
               </select>
             </div>
             <div class="form-row">
@@ -325,11 +354,32 @@ select option{background:#fff;color:var(--tx);}
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🛠️ 獎勵項目編輯</div>
-        <div id="a-rwlist"></div>
-        <div class="actions-row">
-          <button class="btn btn-s" onclick="addRw()">+ 新增獎勵項目</button>
+        <div class="card-title">🛠️ 獎勵展示維護</div>
+        <div class="form-grid g3" style="margin-bottom:16px;">
+          <div class="form-row">
+            <label>獎勵名稱</label>
+            <input type="text" id="new-rw-name" placeholder="輸入獎勵名稱">
+          </div>
+          <div class="form-row">
+            <label>分數顯示</label>
+            <input type="number" id="new-rw-cost" placeholder="分數" min="0">
+          </div>
+          <div class="form-row">
+            <label>庫存</label>
+            <input type="number" id="new-rw-stock" placeholder="庫存" min="0">
+          </div>
+          <div class="form-row">
+            <label>展示類別</label>
+            <select id="new-rw-cat">
+              <option value="game">遊戲內展示</option>
+              <option value="outside">遊戲外展示</option>
+            </select>
+          </div>
         </div>
+        <div class="actions-row">
+          <button class="btn btn-s" onclick="addRw()">+ 新增展示項目</button>
+        </div>
+        <div id="a-rwlist"></div>
       </div>
     </div>
   </div>
@@ -363,6 +413,8 @@ const gRp = () => window.rp || [];
 const sRp = (d) => set(ref(db, 'reports'), d);
 const gRd = () => window.rd || [];
 const sRd = (d) => set(ref(db, 'redeems'), d);
+const gL = () => window.logs || [];
+const sL = (d) => set(ref(db, 'logs'), d);
 
 // 監聽雲端變動
 onValue(ref(db, 'members'), s => { 
@@ -381,12 +433,32 @@ onValue(ref(db, 'members'), s => {
 onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
 onValue(ref(db, 'reports'), s => { window.rp = s.val() || []; if(window.isA) renderARp(); });
 onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; if(window.isA) renderARd(); });
+onValue(ref(db, 'logs'), s => { window.logs = s.val() || []; renderLeaderboard(); });
 
 // 初始化
 window.isA = false;
 const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
 const fmt = t => new Date(t).toLocaleString();
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const LOG_RETENTION = 1000 * 60 * 60 * 24 * 30;
+const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊',5:'Recruiter',6:'Recruit'};
+const tierLabels = ['Champion','Hero+','Hero','VIP+','VIP'];
+const getTierLabel = (tier) => {
+  if(typeof tier === 'number') return tierLabels[tier] || 'VIP';
+  return tier || 'VIP';
+};
+const getTierClass = (tier) => {
+  const label = getTierLabel(tier).toLowerCase().replace('+','-').replace(/ /g,'-');
+  return `tier-${label}`;
+};
+const addLog = (playerName, amount, detail) => {
+  const logs = gL();
+  const now = Date.now();
+  logs.push({ id: now, playerName, amount, detail, ts: now });
+  const cutoff = now - LOG_RETENTION;
+  const trimmed = logs.filter(l => l.ts >= cutoff);
+  sL(trimmed);
+};
 function toast(m,t='info'){ 
   const el=document.getElementById('toast'); el.innerText=m; el.className=''; el.classList.add(t);
   el.style.display='block'; el.classList.add('show');
@@ -431,14 +503,16 @@ function renderHome(){
 function renderLeaderboard(){
   const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
   const tbody = document.getElementById('lb-body');
-  const getRankTitle = (rank) => {
-    const ranks = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊'};
-    return ranks[rank] || '成員';
-  };
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
   
-  tbody.innerHTML = list.map((m,i)=>`<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${getRankTitle(m.rank)}</td><td>${m.tier||'-'}</td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>`).join('')
+  tbody.innerHTML = list.map((m,i)=>{ const rank = parseInt(m.rank); return `<tr><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'Recruit'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
     || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
+
+  const logEl = document.getElementById('score-log');
+  if(logEl){
+    const logs = [...gL()].filter(l=>l.ts >= Date.now() - LOG_RETENTION).sort((a,b)=>b.ts-a.ts).slice(0,10);
+    logEl.innerHTML = logs.length ? logs.map(l=>`<div style="margin-bottom:12px;padding:10px 0;border-bottom:1px solid rgba(216,220,232,0.6)"><div><b>${esc(l.playerName)}</b> +${parseFloat(l.amount).toFixed(1)} pts <span style="color:var(--tx3);">${esc(l.detail)}</span></div><div style="font-size:12px;color:var(--tx3);margin-top:4px">${new Date(l.ts).toLocaleString('zh-TW')}</div></div>`).join('') : '<div style="padding:18px;color:var(--tx3)">暫無最近紀錄</div>';
+  }
 }
 
 // 申報邏輯
@@ -519,18 +593,21 @@ window.submitWeekly = () => {
   document.getElementById('weekly-link').value='';
 };
 
-// 兌換邏輯
+// 獎勵展示邏輯
 function renderRedeem(){
   const el = document.getElementById('reward-list');
-  el.innerHTML = gRw().map(r=>`<div class="card" style="margin:0"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.2rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);margin-bottom:12px">庫存: ${r.stock}</div><button class="btn btn-p" onclick="applyRedeem(${r.id})" ${r.stock<=0?'disabled':''}>${r.stock<=0?'完售':'兌換申請'}</button></div>`).join('');
+  const rewards = gRw();
+  const game = rewards.filter(r=> (r.category||'game')==='game');
+  const outside = rewards.filter(r=> (r.category||'game')==='outside');
+  const renderSection = (title, items) => `
+    <div style="margin-bottom:18px">
+      <div class="card-title">${title}</div>
+      ${items.length ? items.map(r=>`<div class="card" style="margin:0 0 12px"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.1rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);">庫存: ${r.stock}</div><div style="margin-top:8px;font-size:12px;color:var(--tx3);">僅供展示，線下兌換處理</div></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無展示項目</div>`}
+    </div>`;
+  el.innerHTML = renderSection('遊戲內展示', game) + renderSection('遊戲外展示', outside);
 }
-window.applyRedeem = (rid) => {
-  const name = prompt('請輸入您的玩家名稱以供核對：'); if(!name) return;
-  const m = gM().find(x=>x.name===name); if(!m) return toast('找不到該成員','error');
-  const rw = gRw().find(x=>x.id===rid);
-  if(pts(m) < rw.cost) return toast('積分不足','error');
-  const rd = gRd(); rd.push({ id:Date.now(), playerId:m.id, playerName:m.name, rewardId:rw.id, rewardName:rw.name, cost:rw.cost, status:'pending', ts:Date.now() });
-  sRd(rd); toast('兌換申請已送出，管理員將聯絡您','success');
+window.applyRedeem = () => {
+  toast('此頁僅作展示，實際兌換請線下處理','info');
 };
 
 // 管理員功能
@@ -543,13 +620,12 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  const ranks = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊'};
-  el.innerHTML = gM().map(m=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${ranks[m.rank||4]}) - ${m.tier||'初級'}</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:100px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${m.rank===0?'selected':''}>會長</option><option value="1" ${m.rank===1?'selected':''}>內院總管</option><option value="2" ${m.rank===2?'selected':''}>執事</option><option value="3" ${m.rank===3?'selected':''}>助理</option><option value="4" ${m.rank===4?'selected':''}>領隊</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>`).join('');
+  el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
 }
 window.addM = () => { 
   const n=document.getElementById('new-m-name').value; 
   const r=parseInt(document.getElementById('new-m-rank').value)||6;
-  const t=parseInt(document.getElementById('new-m-tier').value)||4;
+  const t=document.getElementById('new-m-tier').value || 'VIP';
   const d=document.getElementById('new-m-date').value;
   
   if(!n) return toast('請輸入玩家名稱','error');
@@ -571,7 +647,7 @@ window.addM = () => {
   sM(m); 
   document.getElementById('new-m-name').value=''; 
   document.getElementById('new-m-rank').value='6';
-  document.getElementById('new-m-tier').value='4';
+  document.getElementById('new-m-tier').value='VIP';
   document.getElementById('new-m-date').value='';
   toast('成員已新增','success');
 };
@@ -579,20 +655,24 @@ window.updateMember = (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
   const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
+  const newTier = document.getElementById('tier-'+name).value || 'VIP';
+  const oldTotal = pts(m);
   // 將總分數設為Weekly，其餘歸零
   m.ptsXP = 0;
   m.ptsWeekly = newPts;
   m.ptsGraid = 0;
   m.ptsBonus = 0;
   m.rank = newRank;
+  m.tier = newTier;
   sM(gM());
+  if(newPts > oldTotal) addLog(m.name, newPts - oldTotal, '管理員調整分數');
   toast('成員資訊已更新','success');
 };
 window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
 
 window.importXP = () => {
   const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
-  lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx) tx.ptsXP=(tx.ptsXP||0)+(parseFloat(v)/20000000); });
+  lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx){ const added = parseFloat(v)/20000000; if(!isNaN(added) && added>0){ tx.ptsXP=(tx.ptsXP||0)+added; addLog(tx.name, added, 'Guild XP 匯入'); } }});
   sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
 };
 
@@ -604,11 +684,16 @@ window.appRep = (id) => {
   const rps=gRp(), r=rps.find(x=>x.id===id), m=gM();
   r.players.forEach(pname=>{
     const tx=m.find(x=>x.name===pname); if(!tx) return;
-    if(r.type==='graid') tx.ptsGraid=(tx.ptsGraid||0)+2;
-    else {
-      tx.ptsWeekly=(tx.ptsWeekly||0)+5; tx.wCount=(tx.wCount||0)+1;
-      if(tx.wCount===2) tx.ptsWeekly=(tx.ptsWeekly||0)+7;
-      if(tx.wCount===4) tx.ptsWeekly=(tx.ptsWeekly||0)+15;
+    if(r.type==='graid'){
+      tx.ptsGraid=(tx.ptsGraid||0)+2;
+      addLog(tx.name, 2, 'Graid 核准');
+    } else {
+      let added = 5;
+      tx.ptsWeekly=(tx.ptsWeekly||0)+5;
+      tx.wCount=(tx.wCount||0)+1;
+      if(tx.wCount===2){ tx.ptsWeekly=(tx.ptsWeekly||0)+7; added += 7; }
+      if(tx.wCount===4){ tx.ptsWeekly=(tx.ptsWeekly||0)+15; added += 15; }
+      addLog(tx.name, added, 'Weekly Obj 核准');
     }
   });
   r.status='approved'; sRp(rps); sM(m); toast('核准成功','success');
@@ -631,9 +716,33 @@ window.rejectRedeem = (id) => {
 };
 
 function renderARw(){
-  document.getElementById('a-rwlist').innerHTML = gRw().map(r=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px"><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('');
+  const rewards = gRw();
+  const game = rewards.filter(r=> (r.category||'game')==='game');
+  const outside = rewards.filter(r=> (r.category||'game')==='outside');
+  const renderGroup = (title, items) => `
+    <div style="margin-bottom:18px">
+      <div class="card-title">${title}</div>
+      ${items.length ? items.map(r=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><div style="font-size:12px;color:var(--tx3);">${r.category==='outside'?'遊戲外':'遊戲內'}</div><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無項目</div>`}
+    </div>`;
+  document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內展示項目', game) + renderGroup('遊戲外展示項目', outside);
 }
-window.addRw = () => { const n=prompt('名稱'), c=prompt('分數'), s=prompt('庫存'); if(n&&c&&s){ const r=gRw(); r.push({id:Date.now(),name:n,cost:parseInt(c),stock:parseInt(s)}); sRw(r); } };
+window.addRw = () => {
+  const name = document.getElementById('new-rw-name').value.trim();
+  const cost = parseInt(document.getElementById('new-rw-cost').value, 10);
+  const stock = parseInt(document.getElementById('new-rw-stock').value, 10);
+  const category = document.getElementById('new-rw-cat').value;
+  if(!name) return toast('請填寫獎勵名稱','error');
+  if(isNaN(cost) || cost < 0) return toast('請填寫正確分數','error');
+  if(isNaN(stock) || stock < 0) return toast('請填寫正確庫存','error');
+  const r = gRw();
+  r.push({id:Date.now(),name,cost,stock,category});
+  sRw(r);
+  document.getElementById('new-rw-name').value = '';
+  document.getElementById('new-rw-cost').value = '';
+  document.getElementById('new-rw-stock').value = '';
+  document.getElementById('new-rw-cat').value = 'game';
+  toast('展示項目已新增','success');
+};
 window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
 
 </script>
