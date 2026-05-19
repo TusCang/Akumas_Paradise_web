@@ -231,7 +231,7 @@ select option{background:#fff;color:var(--tx);}
   <div id="p-report" class="page">
     <div class="page-header">
       <h1>申報 <span>任務完成</span></h1>
-      <p>完成 Graid 或 Weekly Obj 後申報，資料會同步到 Google Sheets，管理員審核後計入積分</p>
+      <p>完成 Graid 或 Weekly Obj 後申報，管理員審核後計入積分</p>
     </div>
 
     <div class="card">
@@ -303,8 +303,7 @@ select option{background:#fff;color:var(--tx);}
         <p>管理成員、積分與獎勵系統</p>
       </div>
       <div class="actions-row" style="justify-content:flex-end;margin-bottom:14px;">
-        <button class="btn btn-b btn-sm" onclick="refreshSheetsData()">同步 Google Sheets 資料</button>
-        <button class="btn btn-s btn-sm" onclick="window.open(GOOGLE_SHEET_URL,'_blank')">開啟 Google Sheet</button>
+        <button class="btn btn-b btn-sm" onclick="window.open('https://console.firebase.google.com/project/akuma-paradise-db/overview','_blank')">Firebase 控制台</button>
       </div>
       <div class="form-grid g2">
         <div class="card">
@@ -403,69 +402,41 @@ select option{background:#fff;color:var(--tx);}
 
 <div id="toast"></div>
 
-<script>
-const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw1vBGNCOfdjtlEUdKkow4b2N577irZxlCym9pvvRdsXY0C8bRosVm29sX9uOb_GHwnOA/exec';
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1N2N9b9s2kaMgEzvupJM6XbGmnFg31xm-5RSMWDlz2RI/edit?usp=sharing';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
+  authDomain: "akuma-paradise-db.firebaseapp.com",
+  projectId: "akuma-paradise-db",
+  databaseURL: "https://akuma-paradise-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: "akuma-paradise-db.firebasestorage.app",
+  messagingSenderId: "616381678361",
+  appId: "1:616381678361:web:c27afc23b5cada9756fb88"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 核心資料連結
 const gM = () => window.m || [];
-const sM = async (d) => { window.m = d; return saveStorage('members', d); };
+const sM = (d) => set(ref(db, 'members'), d);
 const gRw = () => window.rw || [];
-const sRw = async (d) => { window.rw = d; return saveStorage('rewards', d); };
+const sRw = (d) => set(ref(db, 'rewards'), d);
 const gRp = () => window.rp || [];
-const sRp = async (d) => { window.rp = d; return saveStorage('reports', d); };
+const sRp = (d) => set(ref(db, 'reports'), d);
 const gRd = () => window.rd || [];
-const sRd = async (d) => { window.rd = d; return saveStorage('redeems', d); };
+const sRd = (d) => set(ref(db, 'redeems'), d);
 const gL = () => window.logs || [];
-const sL = async (d) => { window.logs = d; return saveStorage('logs', d); };
+const sL = (d) => set(ref(db, 'logs'), d);
 
-const requestSheet = async (collection, action, payload = {}) => {
-  try {
-    const url = `${SHEETS_WEB_APP_URL}?collection=${encodeURIComponent(collection)}&action=${encodeURIComponent(action)}`;
-    const options = action === 'get'
-      ? { cache: 'no-cache' }
-      : { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ collection, action, ...payload }) };
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.json();
-    if (action !== 'get' && result.success !== true) throw new Error(result.message || '儲存失敗');
-    return result;
-  } catch (error) {
-    console.error(error);
-    toast('Google Sheets 儲存/讀取失敗，請檢查 Apps Script 端點', 'error');
-    return { data: [] };
-  }
-};
-
-const fetchStorage = async (collection) => {
-  const result = await requestSheet(collection, 'get');
-  return Array.isArray(result.data) ? result.data : [];
-};
-
-const saveStorage = async (collection, data) => {
-  await requestSheet(collection, 'set', { data });
-};
-
-const loadSheetData = async () => {
-  const [members, rewards, reports, redeems, logs] = await Promise.all([
-    fetchStorage('members'),
-    fetchStorage('rewards'),
-    fetchStorage('reports'),
-    fetchStorage('redeems'),
-    fetchStorage('logs')
-  ]);
-  window.m = members;
-  window.rw = rewards;
-  window.rp = reports;
-  window.rd = redeems;
-  window.logs = logs;
-  renderHome();
-  renderRedeem();
-  if (window.isA) {
-    renderAM();
-    renderARw();
-    renderARp();
-    renderARd();
-  }
+// 監聽雲端變動
+onValue(ref(db, 'members'), s => { 
+  window.m = s.val() || []; 
+  renderHome(); 
+  if(window.isA) renderAM();
+  // 初始化搜尋功能
   setTimeout(() => {
     setupSearchInput('gp1i', 'gp1d', 'gp1');
     setupSearchInput('gp2i', 'gp2d', 'gp2');
@@ -473,15 +444,11 @@ const loadSheetData = async () => {
     setupSearchInput('gp4i', 'gp4d', 'gp4');
     setupSearchInput('wpi', 'wpd', 'wp');
   }, 100);
-};
-
-const refreshSheetsData = async () => {
-  toast('同步 Google Sheets 資料中…', 'info');
-  await loadSheetData();
-  toast('Google Sheets 資料已更新', 'success');
-};
-
-loadSheetData();
+});
+onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
+onValue(ref(db, 'reports'), s => { window.rp = s.val() || []; if(window.isA) renderARp(); });
+onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; if(window.isA) renderARd(); });
+onValue(ref(db, 'logs'), s => { window.logs = s.val() || []; renderLeaderboard(); });
 
 // 初始化
 window.isA = false;
@@ -624,12 +591,12 @@ function renderLeaderboard(){
 
 // 申報邏輯
 window.toggleGraid = () => document.getElementById('graid-inputs').style.display = document.getElementById('rep-type').value==='graid'?'block':'none';
-window.submitReport = async () => {
+window.submitReport = () => {
   const name=document.getElementById('rep-name').value, type=document.getElementById('rep-type').value, link=document.getElementById('rep-link').value;
   if(!name || !link) return toast('請填寫完整資訊','error');
   const p = [name]; if(type==='graid') p.push(document.getElementById('rep-p2').value, document.getElementById('rep-p3').value, document.getElementById('rep-p4').value);
   const rp = gRp(); rp.push({ id:Date.now(), name, type, link, players:p.filter(x=>x), status:'pending', ts:Date.now() });
-  await sRp(rp); toast('申報已送出，請等待審核','success'); navTo('home');
+  sRp(rp); toast('申報已送出，請等待審核','success'); navTo('home');
 };
 
 // 自定義搜尋功能
@@ -663,7 +630,7 @@ window.setSel = (inputId, hiddenId, name) => {
   document.getElementById(inputId).parentElement.querySelector('.ss-drop').classList.remove('open');
 };
 
-window.submitGraid = async () => {
+window.submitGraid = () => {
   const p1=document.getElementById('gp1').value, p2=document.getElementById('gp2').value, p3=document.getElementById('gp3').value, p4=document.getElementById('gp4').value;
   const link=document.getElementById('graid-link').value;
   
@@ -675,7 +642,7 @@ window.submitGraid = async () => {
   
   const rp = gRp(); 
   rp.push({ id:Date.now(), players:[p1,p2,p3,p4], type:'graid', link, status:'pending', ts:Date.now() });
-  await sRp(rp);
+  sRp(rp); 
   toast('Graid申報已送出','success'); 
   document.getElementById('gp1i').value=''; document.getElementById('gp1').value='';
   document.getElementById('gp2i').value=''; document.getElementById('gp2').value='';
@@ -684,7 +651,7 @@ window.submitGraid = async () => {
   document.getElementById('graid-link').value='';
 };
 
-window.submitWeekly = async () => {
+window.submitWeekly = () => {
   const name=document.getElementById('wp').value, link=document.getElementById('weekly-link').value;
   
   if(!name || !link) return toast('請填寫完整資訊','error');
@@ -694,7 +661,7 @@ window.submitWeekly = async () => {
   
   const rp = gRp(); 
   rp.push({ id:Date.now(), players:[name], type:'weekly', link, status:'pending', ts:Date.now() });
-  await sRp(rp);
+  sRp(rp); 
   toast('Weekly Obj申報已送出','success'); 
   document.getElementById('wpi').value=''; document.getElementById('wp').value='';
   document.getElementById('weekly-link').value='';
@@ -729,7 +696,7 @@ function renderAM(){
   const el=document.getElementById('a-mlist');
   el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
 }
-window.addM = async () => { 
+window.addM = () => { 
   const n=document.getElementById('new-m-name').value; 
   const r=parseInt(document.getElementById('new-m-rank').value)||6;
   const t=document.getElementById('new-m-tier').value || 'VIP';
@@ -751,14 +718,14 @@ window.addM = async () => {
     tier:t,
     joinDate:new Date(d).getTime()
   }); 
-  await sM(m); 
+  sM(m); 
   document.getElementById('new-m-name').value=''; 
   document.getElementById('new-m-rank').value='6';
   document.getElementById('new-m-tier').value='VIP';
   document.getElementById('new-m-date').value='';
   toast('成員已新增','success');
 };
-window.updateMember = async (name) => {
+window.updateMember = (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
   const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
@@ -771,23 +738,23 @@ window.updateMember = async (name) => {
   m.ptsBonus = 0;
   m.rank = newRank;
   m.tier = newTier;
-  await sM(gM());
+  sM(gM());
   if(newPts > oldTotal) addLog(m.name, newPts - oldTotal, '管理員調整分數');
   toast('成員資訊已更新','success');
 };
-window.delM = async (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); await sM(m); } };
+window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
 
-window.importXP = async () => {
+window.importXP = () => {
   const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
   lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx){ const added = parseFloat(v)/20000000; if(!isNaN(added) && added>0){ tx.ptsXP=(tx.ptsXP||0)+added; addLog(tx.name, added, 'Guild XP 匯入'); } }});
-  await sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
+  sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
 };
 
 function renderARp(){
   const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
   el.innerHTML = rp.map(r=>`<div class="card" style="margin:0"><div><b>${r.type==='graid'?'⚔️ Graid':'🎯 Weekly'}</b> - ${r.players.join(', ')}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRep(${r.id})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
 }
-window.appRep = async (id) => {
+window.appRep = (id) => {
   const rps=gRp(), r=rps.find(x=>x.id===id), m=gM();
   r.players.forEach(pname=>{
     const tx=m.find(x=>x.name===pname); if(!tx) return;
@@ -803,23 +770,23 @@ window.appRep = async (id) => {
       addLog(tx.name, added, 'Weekly Obj 核准');
     }
   });
-  r.status='approved'; await sRp(rps); await sM(m); toast('核准成功','success');
+  r.status='approved'; sRp(rps); sM(m); toast('核准成功','success');
 };
 
 function renderARd(){
   const rd=gRd().filter(x=>x.status==='pending'), el=document.getElementById('a-rdmlist');
   el.innerHTML = rd.map(r=>`<div class="card" style="margin:0"><div>${r.playerName} → ${r.rewardName} (${r.cost} pts)</div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="deductAndApproveRedeem(${r.id})">扣分並核准</button><button class="btn btn-s btn-sm" onclick="rejectRedeem(${r.id})">拒絕</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無兌換申請</div>';
 }
-window.deductAndApproveRedeem = async (id) => {
+window.deductAndApproveRedeem = (id) => {
   const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
   if(!mx) return toast('找不到該成員','error');
   let d=r.cost; ['ptsWeekly','ptsXP','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
-  if(rw) rw.stock--; r.status='approved'; await sRd(rds); await sM(m); await sRw(rws); toast('已扣分並核准','success');
+  if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('已扣分並核准','success');
 };
-window.rejectRedeem = async (id) => {
+window.rejectRedeem = (id) => {
   if(!confirm('確定拒絕此兌換申請？')) return;
   const rds=gRd(), r=rds.find(x=>x.id===id);
-  r.status='rejected'; await sRd(rds); toast('已拒絕申請','success');
+  r.status='rejected'; sRd(rds); toast('已拒絕申請','success');
 };
 
 function renderARw(){
@@ -833,7 +800,7 @@ function renderARw(){
     </div>`;
   document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內展示項目', game) + renderGroup('遊戲外展示項目', outside);
 }
-window.addRw = async () => {
+window.addRw = () => {
   const name = document.getElementById('new-rw-name').value.trim();
   const cost = parseInt(document.getElementById('new-rw-cost').value, 10);
   const stock = parseInt(document.getElementById('new-rw-stock').value, 10);
@@ -843,14 +810,14 @@ window.addRw = async () => {
   if(isNaN(stock) || stock < 0) return toast('請填寫正確庫存','error');
   const r = gRw();
   r.push({id:Date.now(),name,cost,stock,category});
-  await sRw(r);
+  sRw(r);
   document.getElementById('new-rw-name').value = '';
   document.getElementById('new-rw-cost').value = '';
   document.getElementById('new-rw-stock').value = '';
   document.getElementById('new-rw-cat').value = 'game';
   toast('展示項目已新增','success');
 };
-window.delRw = async (id) => { const r=gRw().filter(x=>x.id!==id); await sRw(r); };
+window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
 
 </script>
 </body>
