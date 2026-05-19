@@ -65,6 +65,23 @@ th.sortable:hover{color:var(--orange);}
 .stat-label{font-size:12px;color:var(--tx3);margin-top:5px;}
 
 .table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bdr3);}
+.reward-list{display:grid;gap:26px;}
+.reward-section{margin-bottom:24px;}
+.reward-section-title{display:inline-flex;align-items:center;padding:12px 16px;border-radius:999px;font-size:15px;font-weight:800;letter-spacing:.5px;background:rgba(20,120,204,.1);color:var(--blue-d);margin-bottom:18px;}
+.reward-section-title.reward-outside{background:rgba(20,160,80,.12);color:#0E8A3A;}
+.reward-card-grid{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:18px;}
+.reward-card{background:#fff;border:1px solid rgba(216,220,232,.7);border-radius:22px;padding:22px;box-shadow:0 15px 30px rgba(0,0,0,.05);display:flex;flex-direction:column;justify-content:space-between;min-height:180px;cursor:grab;}
+.reward-card.dragging{opacity:0.45;}
+.reward-card.drag-over{border-color:var(--blue);box-shadow:0 0 0 4px rgba(20,120,204,0.12);}
+.reward-card-title{font-size:18px;font-weight:900;color:var(--tx);margin-bottom:14px;}
+.reward-card-handle{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:12px;background:rgba(20,120,204,.08);color:var(--blue);font-size:16px;cursor:grab;margin-right:10px;}
+.reward-card-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--tx2);}
+.reward-card-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--tx2);}
+.reward-card-price{font-size:16px;font-weight:900;color:var(--orange);}
+.reward-card-stock{font-size:13px;color:var(--tx3);}
+.reward-card.empty{border-style:dashed;color:var(--tx3);text-align:center;min-height:100px;display:flex;align-items:center;justify-content:center;}
+@media(max-width:980px){.reward-card-grid{grid-template-columns:repeat(2,minmax(220px,1fr));}}
+@media(max-width:680px){.reward-card-grid{grid-template-columns:1fr;}}
 table{width:100%;border-collapse:collapse;font-size:15px;}
 thead{background:#FBF3EE;}
 th{padding:14px 15px;text-align:left;font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
@@ -284,8 +301,7 @@ select option{background:#fff;color:var(--tx);}
       <p>線上展示獎勵項目，線下兌換另行處理</p>
     </div>
     <div class="card">
-      <div class="card-title">展示內容</div>
-      <div id="reward-list" class="grid"></div>
+      <div id="reward-list" class="reward-list"></div>
     </div>
   </div>
 
@@ -422,6 +438,10 @@ select option{background:#fff;color:var(--tx);}
               <option value="game">遊戲內展示</option>
               <option value="outside">遊戲外展示</option>
             </select>
+          </div>
+          <div class="form-row">
+            <label>顯示位置</label>
+            <input type="number" id="new-rw-pos" placeholder="數字越小越前面" min="0" value="0">
           </div>
         </div>
         <div class="actions-row">
@@ -703,15 +723,17 @@ window.submitWeekly = () => {
 // 獎勵展示邏輯
 function renderRedeem(){
   const el = document.getElementById('reward-list');
-  const rewards = gRw();
+  const rewards = [...gRw()].sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
   const game = rewards.filter(r=> (r.category||'game')==='game');
   const outside = rewards.filter(r=> (r.category||'game')==='outside');
-  const renderSection = (title, items) => `
-    <div style="margin-bottom:18px">
-      <div class="card-title">${title}</div>
-      ${items.length ? items.map(r=>`<div class="card" style="margin:0 0 12px"><div class="card-title">${esc(r.name)}</div><div style="font-size:1.1rem;font-weight:900;color:var(--orange);margin-bottom:8px">${r.cost} pts</div><div style="font-size:0.8rem;color:var(--tx3);">庫存: ${r.stock}</div><div style="margin-top:8px;font-size:12px;color:var(--tx3);">僅供展示，線下兌換處理</div></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無展示項目</div>`}
+  const renderSection = (title, items, type) => `
+    <div class="reward-section">
+      <div class="reward-section-title ${type==='outside'?'reward-outside':''}">${title}</div>
+      <div class="reward-card-grid">
+        ${items.length ? items.map(r=>`<div class="reward-card"><div><div class="reward-card-title">${esc(r.name)}</div><div class="reward-card-meta"><span class="reward-card-price">${r.cost} pts</span><span class="reward-card-stock">庫存 ${r.stock}</span></div></div><div style="margin-top:18px;font-size:13px;color:var(--tx3);line-height:1.5;">僅供展示，線下兌換處理</div></div>`).join('') : `<div class="reward-card empty">暫無展示項目</div>`}
+      </div>
     </div>`;
-  el.innerHTML = renderSection('遊戲內展示', game) + renderSection('遊戲外展示', outside);
+  el.innerHTML = renderSection('遊戲內展示', game, 'game') + renderSection('遊戲外展示', outside, 'outside');
 }
 window.applyRedeem = () => {
   toast('此頁僅作展示，實際兌換請線下處理','info');
@@ -898,13 +920,13 @@ window.rejectRedeem = (id) => {
 };
 
 function renderARw(){
-  const rewards = gRw();
+  const rewards = [...gRw()].sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
   const game = rewards.filter(r=> (r.category||'game')==='game');
   const outside = rewards.filter(r=> (r.category||'game')==='outside');
   const renderGroup = (title, items) => `
     <div style="margin-bottom:18px">
       <div class="card-title">${title}</div>
-      ${items.length ? items.map(r=>`<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><div style="font-size:12px;color:var(--tx3);">${r.category==='outside'?'遊戲外':'遊戲內'}</div><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無項目</div>`}
+      ${items.length ? items.map(r=>`<div class="card reward-admin-card" draggable="true" data-id="${r.id}" data-category="${r.category}" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap" ondragstart="onRewardDragStart(event, ${r.id})" ondragover="onRewardDragOver(event)" ondragenter="onRewardDragEnter(event)" ondragleave="onRewardDragLeave(event)" ondrop="onRewardDrop(event, ${r.id})"><div class="reward-card-handle">☰</div><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="font-size:12px;color:var(--tx3);">位置 <input type="number" value="${parseInt(r.position)||0}" onchange="updateRwPosition(${r.id}, this.value)" style="width:64px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:8px;"></label><span style="font-size:12px;color:var(--tx3);">${r.category==='outside'?'遊戲外':'遊戲內'}</span><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無項目</div>`}
     </div>`;
   document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內展示項目', game) + renderGroup('遊戲外展示項目', outside);
 }
@@ -913,19 +935,70 @@ window.addRw = () => {
   const cost = parseInt(document.getElementById('new-rw-cost').value, 10);
   const stock = parseInt(document.getElementById('new-rw-stock').value, 10);
   const category = document.getElementById('new-rw-cat').value;
+  const position = parseInt(document.getElementById('new-rw-pos').value, 10);
   if(!name) return toast('請填寫獎勵名稱','error');
   if(isNaN(cost) || cost < 0) return toast('請填寫正確分數','error');
   if(isNaN(stock) || stock < 0) return toast('請填寫正確庫存','error');
+  if(isNaN(position) || position < 0) return toast('請填寫正確顯示位置','error');
   const r = gRw();
-  r.push({id:Date.now(),name,cost,stock,category});
+  r.push({id:Date.now(),name,cost,stock,category,position});
   sRw(r);
   document.getElementById('new-rw-name').value = '';
   document.getElementById('new-rw-cost').value = '';
   document.getElementById('new-rw-stock').value = '';
   document.getElementById('new-rw-cat').value = 'game';
+  document.getElementById('new-rw-pos').value = '0';
   toast('展示項目已新增','success');
 };
 window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
+window.updateRwPosition = (id, value) => {
+  const rewards = gRw();
+  const item = rewards.find(r => r.id === id);
+  if(!item) return;
+  const pos = parseInt(value, 10);
+  item.position = isNaN(pos) ? 0 : pos;
+  sRw(rewards);
+};
+
+window.onRewardDragStart = (event, id) => {
+  event.dataTransfer.setData('text/plain', id);
+  event.dataTransfer.effectAllowed = 'move';
+  document.querySelectorAll('.reward-admin-card').forEach(el => el.classList.remove('dragging'));
+  const dragged = event.currentTarget;
+  dragged.classList.add('dragging');
+};
+window.onRewardDragOver = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+window.onRewardDragEnter = (event) => {
+  if(event.currentTarget !== event.target) return;
+  event.currentTarget.classList.add('drag-over');
+};
+window.onRewardDragLeave = (event) => {
+  if(event.currentTarget !== event.target) return;
+  event.currentTarget.classList.remove('drag-over');
+};
+window.onRewardDrop = (event, targetId) => {
+  event.preventDefault();
+  const sourceId = parseInt(event.dataTransfer.getData('text/plain'), 10);
+  const target = document.querySelector(`.reward-admin-card[data-id="${targetId}"]`);
+  if(!target || sourceId === targetId) return;
+  const rewards = [...gRw()];
+  const sourceItem = rewards.find(r => r.id === sourceId);
+  const targetItem = rewards.find(r => r.id === targetId);
+  if(!sourceItem || !targetItem || sourceItem.category !== targetItem.category) return;
+  const group = rewards.filter(r => r.category === sourceItem.category).sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
+  const sourceIndex = group.findIndex(r => r.id === sourceId);
+  const targetIndex = group.findIndex(r => r.id === targetId);
+  if(sourceIndex < 0 || targetIndex < 0) return;
+  group.splice(sourceIndex, 1);
+  group.splice(targetIndex, 0, sourceItem);
+  group.forEach((item, index) => { item.position = index; });
+  const others = rewards.filter(r => r.category !== sourceItem.category);
+  sRw([...others, ...group]);
+  document.querySelectorAll('.reward-admin-card').forEach(el => el.classList.remove('dragging','drag-over'));
+};
 
 </script>
 </body>
