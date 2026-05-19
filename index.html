@@ -68,9 +68,14 @@ th.sortable:hover{color:var(--orange);}
 table{width:100%;border-collapse:collapse;font-size:15px;}
 thead{background:#FBF3EE;}
 th{padding:14px 15px;text-align:left;font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
-td{padding:13px 15px;border-bottom:1px solid #EEF0F5;color:var(--tx);font-size:15px;}
+td{padding:13px 15px;border-bottom:1px solid #EEF5F7;color:var(--tx);font-size:15px;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:#FDF5F1;}
+#member-edit-table td{padding:10px 12px;}
+#member-edit-table input, #member-edit-table select{width:100%;border:1px solid rgba(216,220,232,.7);border-radius:10px;background:#fff;color:var(--tx);font-family:var(--font);font-size:14px;padding:8px 10px;outline:none;}
+#member-edit-table input:focus, #member-edit-table select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,80,10,0.14);}
+#member-edit-table th{padding:12px 14px;}
+#member-edit-table tbody tr:hover td{background:rgba(232,80,10,0.05);}
 .rb{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:12px;font-weight:700;}
 .r1{background:rgba(255,215,0,.15);color:#D4A800;} .r2{background:rgba(160,160,160,.15);color:#888;} .r3{background:rgba(180,100,30,.15);color:#B46318;} .rn{background:rgba(232,80,10,.07);color:var(--tx3);}
 .pts-pill{display:inline-block;background:linear-gradient(135deg,rgba(232,80,10,.12),rgba(232,80,10,.05));border:1px solid rgba(232,80,10,.28);color:var(--orange-l);padding:3px 10px;border-radius:20px;font-weight:700;font-size:13px;}
@@ -355,6 +360,34 @@ select option{background:#fff;color:var(--tx);}
               <button class="btn btn-p" onclick="addM()" style="width:100%">+ 新增成員</button>
             </div>
           </div>
+        </div>
+        <div class="card" style="margin-bottom:18px;padding:18px;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <span>👥 成員名單編輯</span>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+              <button class="btn btn-s btn-sm" onclick="addEmptyMemberRow()">+ 新增空白列</button>
+              <button class="btn btn-p btn-sm" onclick="saveMemberTable()">💾 儲存清單</button>
+            </div>
+          </div>
+          <div class="table-wrap" style="overflow-x:auto;">
+            <table id="member-edit-table">
+              <thead>
+                <tr>
+                  <th style="width:24px">#</th>
+                  <th>玩家名稱</th>
+                  <th>職銜</th>
+                  <th>階級</th>
+                  <th>入會日期</th>
+                  <th>XP pts</th>
+                  <th>Weekly pts</th>
+                  <th>Graid pts</th>
+                  <th>Bonus pts</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p style="margin-top:10px;font-size:13px;color:var(--tx3)">直接在表格中編輯欄位；完成後按右上角「儲存清單」。新增成員時可以先加空白列。</p>
         </div>
         <div id="a-mlist"></div>
       </div>
@@ -695,6 +728,7 @@ window.adminLogin = () => {
 function renderAM(){
   const el=document.getElementById('a-mlist');
   el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
+  renderMemberEditTable();
 }
 window.addM = () => { 
   const n=document.getElementById('new-m-name').value; 
@@ -743,6 +777,80 @@ window.updateMember = (name) => {
   toast('成員資訊已更新','success');
 };
 window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
+
+function renderMemberEditTable(){
+  const tbody = document.querySelector('#member-edit-table tbody');
+  const members = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name));
+  tbody.innerHTML = members.map((m,i)=>{
+    return `<tr data-id="${m.id||''}">
+      <td>${i+1}</td>
+      <td><input type="text" value="${escAttr(m.name)}" class="member-name"></td>
+      <td><select class="member-rank"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select></td>
+      <td><select class="member-tier"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select></td>
+      <td><input type="date" value="${m.joinDate?new Date(m.joinDate).toISOString().slice(0,10):''}" class="member-date"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsXP||0).toFixed(1)}" class="member-ptsXP"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsWeekly||0).toFixed(1)}" class="member-ptsWeekly"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsGraid||0).toFixed(1)}" class="member-ptsGraid"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsBonus||0).toFixed(1)}" class="member-ptsBonus"></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--tx3)">目前尚無成員資料，請新增成員或加入空白列</td></tr>';
+}
+
+window.addEmptyMemberRow = () => {
+  const tbody = document.querySelector('#member-edit-table tbody');
+  const rowCount = tbody.querySelectorAll('tr').length + 1;
+  const blank = `<tr data-id="">
+    <td>${rowCount}</td>
+    <td><input type="text" value="" class="member-name" placeholder="玩家名稱"></td>
+    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4" selected>領隊</option><option value="5">Recruiter</option><option value="6">Recruit</option></select></td>
+    <td><select class="member-tier"><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP" selected>VIP</option></select></td>
+    <td><input type="date" value="" class="member-date"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsXP"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsWeekly"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsGraid"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsBonus"></td>
+  </tr>`;
+  tbody.insertAdjacentHTML('beforeend', blank);
+};
+
+window.saveMemberTable = () => {
+  const rows = Array.from(document.querySelectorAll('#member-edit-table tbody tr'));
+  const updated = [];
+  const current = gM();
+  for(const row of rows){
+    const name = row.querySelector('.member-name')?.value.trim();
+    const rank = parseInt(row.querySelector('.member-rank')?.value, 10);
+    const tier = row.querySelector('.member-tier')?.value;
+    const dateVal = row.querySelector('.member-date')?.value;
+    const ptsXP = parseFloat(row.querySelector('.member-ptsXP')?.value) || 0;
+    const ptsWeekly = parseFloat(row.querySelector('.member-ptsWeekly')?.value) || 0;
+    const ptsGraid = parseFloat(row.querySelector('.member-ptsGraid')?.value) || 0;
+    const ptsBonus = parseFloat(row.querySelector('.member-ptsBonus')?.value) || 0;
+    if(!name) continue;
+    if(!dateVal) return toast('請為所有成員填寫入會日期','error');
+    const existing = current.find(x => x.id == row.dataset.id || x.name === name) || {};
+    updated.push({
+      id: row.dataset.id || existing.id || Date.now() + Math.floor(Math.random()*1000),
+      name,
+      rank: isNaN(rank) ? 6 : rank,
+      tier: tier || 'VIP',
+      joinDate: new Date(dateVal).getTime(),
+      ptsXP,
+      ptsWeekly,
+      ptsGraid,
+      ptsBonus,
+      wCount: existing.wCount || 0
+    });
+  }
+  if(updated.length === 0){
+    return toast('表格中尚未填寫任何有效成員','error');
+  }
+  sM(updated);
+  toast('成員清單已儲存','success');
+  renderMemberEditTable();
+};
+
+window.renderMemberEditTable = renderMemberEditTable;
 
 window.importXP = () => {
   const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
