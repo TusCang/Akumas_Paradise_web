@@ -354,8 +354,8 @@ select option{background:#fff;color:var(--tx);}
                 <option value="2">執事 (Strategist)</option>
                 <option value="3">助理 (Captain+)</option>
                 <option value="4">領隊 (Captain)</option>
-                <option value="5">正式成員 (Recruiter)</option>
-                <option value="6" selected>成員 (Recruit)</option>
+                <option value="5">正式成員</option>
+                <option value="6" selected>成員</option>
               </select>
             </div>
             <div class="form-row">
@@ -521,7 +521,7 @@ const compareLeaderboard = (a,b) => {
   const key = window.lbSort.key;
   let cmp = 0;
   if(key==='rank'){
-    cmp = (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name,'zh-TW');
+    cmp = normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='tier'){
     cmp = (tierOrder[getTierLabel(a.tier)]||99) - (tierOrder[getTierLabel(b.tier)]||99) || a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='name'){
@@ -537,7 +537,7 @@ const compareMembers = (a,b) => {
   const key = window.memberSort.key;
   let cmp = 0;
   if(key==='rank'){
-    cmp = (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name,'zh-TW');
+    cmp = normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='tier'){
     cmp = (tierOrder[getTierLabel(a.tier)]||99) - (tierOrder[getTierLabel(b.tier)]||99) || a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='name'){
@@ -620,7 +620,20 @@ window.findLeaderboard = () => {
 };
 const escAttr = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const LOG_RETENTION = 1000 * 60 * 60 * 24 * 30;
-const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊',5:'Recruiter',6:'Recruit'};
+const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊',5:'正式成員',6:'成員'};
+const rankOrder = {
+  '會長':0,'內院總管':1,'執事':2,'助理':3,'領隊':4,'正式成員':5,'成員':6,
+  'Recruiter':5,'Recruit':6,'Owner':0,'Chief+':1,'Strategist':2,'Captain+':3,'Captain':4
+};
+const normalizeRank = (rank) => {
+  if(typeof rank === 'number') return rank;
+  if(typeof rank === 'string'){
+    const num = parseInt(rank,10);
+    if(!isNaN(num)) return num;
+    return rankOrder[rank.trim()] ?? 99;
+  }
+  return 99;
+};
 const tierLabels = ['Champion','Hero+','Hero','VIP+','VIP'];
 const getTierLabel = (tier) => {
   if(typeof tier === 'number') return tierLabels[tier] || 'VIP';
@@ -688,7 +701,7 @@ function renderLeaderboard(){
   const tbody = document.getElementById('lb-body');
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
   
-  tbody.innerHTML = list.map((m,i)=>{ const rank = parseInt(m.rank); return `<tr data-name="${escAttr(m.name).toLowerCase()}"><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'Recruit'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
+  tbody.innerHTML = list.map((m,i)=>{ const rank = normalizeRank(m.rank); return `<tr data-name="${escAttr(m.name).toLowerCase()}"><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'成員'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
     || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
 
   updateSortIndicators();
@@ -807,7 +820,7 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
+  el.innerHTML = gM().slice().sort((a,b)=> normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name)).map(m=>{ const rank = normalizeRank(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'成員'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${normalizeRank(m.rank)===0?'selected':''}>會長</option><option value="1" ${normalizeRank(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${normalizeRank(m.rank)===2?'selected':''}>執事</option><option value="3" ${normalizeRank(m.rank)===3?'selected':''}>助理</option><option value="4" ${normalizeRank(m.rank)===4?'selected':''}>領隊</option><option value="5" ${normalizeRank(m.rank)===5?'selected':''}>正式成員</option><option value="6" ${normalizeRank(m.rank)===6?'selected':''}>成員</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
   renderMemberEditTable();
 }
 window.addM = () => { 
@@ -865,7 +878,7 @@ function renderMemberEditTable(){
     return `<tr data-id="${m.id||''}">
       <td>${i+1}</td>
       <td><input type="text" value="${escAttr(m.name)}" class="member-name"></td>
-      <td><select class="member-rank"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select></td>
+      <td><select class="member-rank"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>正式成員</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>成員</option></select></td>
       <td><select class="member-tier"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select></td>
       <td><input type="date" value="${m.joinDate?new Date(m.joinDate).toISOString().slice(0,10):''}" class="member-date"></td>
       <td>${pts(m).toFixed(1)}</td>
@@ -884,7 +897,7 @@ window.addEmptyMemberRow = () => {
   const blank = `<tr data-id="">
     <td>${rowCount}</td>
     <td><input type="text" value="" class="member-name" placeholder="玩家名稱"></td>
-    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4" selected>領隊</option><option value="5">Recruiter</option><option value="6">Recruit</option></select></td>
+    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4" selected>領隊</option><option value="5">正式成員</option><option value="6">成員</option></select></td>
     <td><select class="member-tier"><option value="">無階級</option><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP" selected>VIP</option></select></td>
     <td><input type="date" value="" class="member-date"></td>
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsXP"></td>
