@@ -385,6 +385,7 @@ select option{background:#fff;color:var(--tx);}
               <button class="btn btn-p btn-sm" onclick="saveMemberTable()">💾 儲存清單</button>
             </div>
           </div>
+          <div id="member-sort-hint" style="margin-top:10px;font-size:13px;color:var(--tx3)">目前排序：職銜 正序</div>
           <div class="table-wrap" style="overflow-x:auto;">
             <table id="member-edit-table">
               <thead>
@@ -395,10 +396,10 @@ select option{background:#fff;color:var(--tx);}
                   <th class="sortable" onclick="setMemberSort('tier')">階級 <span class="sort-arrow" id="sort-member-tier">⇅</span></th>
                   <th class="sortable" onclick="setMemberSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-member-joinDate">⇅</span></th>
                   <th class="sortable" onclick="setMemberSort('pts')">總分 <span class="sort-arrow" id="sort-member-pts">⇅</span></th>
-                  <th>XP pts</th>
-                  <th>Weekly pts</th>
-                  <th>Graid pts</th>
-                  <th>Bonus pts</th>
+                  <th class="sortable" onclick="setMemberSort('xp')">XP pts <span class="sort-arrow" id="sort-member-xp">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('weekly')">Weekly pts <span class="sort-arrow" id="sort-member-weekly">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('graid')">Graid pts <span class="sort-arrow" id="sort-member-graid">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('bonus')">Bonus pts <span class="sort-arrow" id="sort-member-bonus">⇅</span></th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -509,7 +510,7 @@ window.isA = false;
 window.lbSort = { key:'rank', dir:'asc' };
 window.memberSort = { key:'rank', dir:'asc' };
 const lbSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'目前分數', joinDate:'入會日期' };
-const memberSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'總積分', joinDate:'入會日期' };
+const memberSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'總積分', xp:'XP', weekly:'Weekly', graid:'Graid', bonus:'Bonus', joinDate:'入會日期' };
 const tierOrder = { Champion:0, 'Hero+':1, Hero:2, 'VIP+':3, VIP:4 };
 const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
 const fmt = t => new Date(t).toLocaleString();
@@ -541,6 +542,14 @@ const compareMembers = (a,b) => {
     cmp = a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='pts'){
     cmp = pts(a) - pts(b) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='xp'){
+    cmp = (a.ptsXP||0) - (b.ptsXP||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='weekly'){
+    cmp = (a.ptsWeekly||0) - (b.ptsWeekly||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='graid'){
+    cmp = (a.ptsGraid||0) - (b.ptsGraid||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='bonus'){
+    cmp = (a.ptsBonus||0) - (b.ptsBonus||0) || a.name.localeCompare(b.name,'zh-TW');
   } else if(key==='joinDate'){
     cmp = (a.joinDate||0) - (b.joinDate||0) || a.name.localeCompare(b.name,'zh-TW');
   }
@@ -562,7 +571,7 @@ const updateSortIndicators = () => {
   if(hint) hint.textContent = `目前排序：${lbSortLabels[window.lbSort.key]} ${window.lbSort.dir==='asc'?'正序':'反序'}`;
 };
 const updateMemberSortIndicators = () => {
-  ['rank','tier','name','pts','joinDate'].forEach(key => {
+  ['rank','tier','name','pts','xp','weekly','graid','bonus','joinDate'].forEach(key => {
     const el = document.getElementById(`sort-member-${key}`);
     if(!el) return;
     if(window.memberSort.key===key){
@@ -573,6 +582,8 @@ const updateMemberSortIndicators = () => {
       el.style.opacity = '0.4';
     }
   });
+  const hint = document.getElementById('member-sort-hint');
+  if(hint) hint.textContent = `目前排序：${memberSortLabels[window.memberSort.key] || '排序'} ${window.memberSort.dir==='asc'?'正序':'反序'}`;
 };
 window.setLbSort = (key) => {
   if(window.lbSort.key === key){
