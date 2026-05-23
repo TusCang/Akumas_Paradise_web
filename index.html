@@ -103,6 +103,7 @@ tr:hover td{background:#FDF5F1;}
 .tier-hero{background:rgba(128,0,128,.15);color:#9932CC;}
 .tier-vip-plus{background:rgba(0,150,255,.15);color:#0066CC;}
 .tier-vip{background:rgba(0,200,100,.15);color:#00A050;}
+.tier-none{background:rgba(160,160,160,.08);color:var(--tx3);}
 
 .form-grid{display:grid;gap:14px;}
 .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;}
@@ -360,6 +361,7 @@ select option{background:#fff;color:var(--tx);}
             <div class="form-row">
               <label>階級</label>
               <select id="new-m-tier">
+                <option value="">無階級</option>
                 <option value="Champion">Champion 🟨</option>
                 <option value="Hero+">Hero+ 🌸</option>
                 <option value="Hero">Hero 💜</option>
@@ -622,10 +624,14 @@ const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊'
 const tierLabels = ['Champion','Hero+','Hero','VIP+','VIP'];
 const getTierLabel = (tier) => {
   if(typeof tier === 'number') return tierLabels[tier] || 'VIP';
-  return tier || 'VIP';
+  if(tier === null || tier === undefined) return '無階級';
+  if(String(tier).trim() === '') return '無階級';
+  return tier;
 };
 const getTierClass = (tier) => {
-  const label = getTierLabel(tier).toLowerCase().replace('+','-').replace(/ /g,'-');
+  const labelRaw = getTierLabel(tier);
+  if(labelRaw === '無階級') return 'tier-none';
+  const label = String(labelRaw).toLowerCase().replace('+','-').replace(/ /g,'-');
   return `tier-${label}`;
 };
 const addLog = (playerName, amount, detail) => {
@@ -801,13 +807,13 @@ window.adminLogin = () => {
 
 function renderAM(){
   const el=document.getElementById('a-mlist');
-  el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
+  el.innerHTML = gM().slice().sort((a,b)=> (parseInt(a.rank)||99) - (parseInt(b.rank)||99) || a.name.localeCompare(b.name)).map(m=>{ const rank = parseInt(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'Recruit'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
   renderMemberEditTable();
 }
 window.addM = () => { 
   const n=document.getElementById('new-m-name').value; 
   const r=parseInt(document.getElementById('new-m-rank').value)||6;
-  const t=document.getElementById('new-m-tier').value || 'VIP';
+  const t=document.getElementById('new-m-tier').value;
   const d=document.getElementById('new-m-date').value;
   
   if(!n) return toast('請輸入玩家名稱','error');
@@ -837,7 +843,7 @@ window.updateMember = (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
   const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
-  const newTier = document.getElementById('tier-'+name).value || 'VIP';
+  const newTier = document.getElementById('tier-'+name).value;
   const oldTotal = pts(m);
   // 將總分數設為Weekly，其餘歸零
   m.ptsXP = 0;
@@ -860,7 +866,7 @@ function renderMemberEditTable(){
       <td>${i+1}</td>
       <td><input type="text" value="${escAttr(m.name)}" class="member-name"></td>
       <td><select class="member-rank"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>Recruiter</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>Recruit</option></select></td>
-      <td><select class="member-tier"><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select></td>
+      <td><select class="member-tier"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select></td>
       <td><input type="date" value="${m.joinDate?new Date(m.joinDate).toISOString().slice(0,10):''}" class="member-date"></td>
       <td>${pts(m).toFixed(1)}</td>
       <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsXP||0).toFixed(1)}" class="member-ptsXP"></td>
@@ -879,7 +885,7 @@ window.addEmptyMemberRow = () => {
     <td>${rowCount}</td>
     <td><input type="text" value="" class="member-name" placeholder="玩家名稱"></td>
     <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4" selected>領隊</option><option value="5">Recruiter</option><option value="6">Recruit</option></select></td>
-    <td><select class="member-tier"><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP" selected>VIP</option></select></td>
+    <td><select class="member-tier"><option value="">無階級</option><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP" selected>VIP</option></select></td>
     <td><input type="date" value="" class="member-date"></td>
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsXP"></td>
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsWeekly"></td>
@@ -909,7 +915,7 @@ window.saveMemberTable = () => {
       id: row.dataset.id || existing.id || Date.now() + Math.floor(Math.random()*1000),
       name,
       rank: isNaN(rank) ? 6 : rank,
-      tier: tier || 'VIP',
+      tier: tier,
       joinDate: new Date(dateVal).getTime(),
       ptsXP,
       ptsWeekly,
