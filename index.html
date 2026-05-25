@@ -126,10 +126,6 @@ select option{background:#fff;color:var(--tx);}
 .btn-d:hover{background:rgba(200,40,40,.15);}
 .btn-sm{padding:5px 11px;font-size:12px;}
 .actions-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px;}
-.panel-toggle{border:1px solid rgba(20,120,204,.18);background:rgba(20,120,204,.08);color:var(--blue-d);padding:8px 14px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:13px;}
-.panel-toggle:hover{background:rgba(20,120,204,.14);}
-.panel-hidden{display:none!important;}
-#member-import-file{display:block;width:100%;margin-top:8px;}
 
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.4px;}
 .tg{background:rgba(232,80,10,.12);color:var(--orange-l);}
@@ -315,22 +311,21 @@ select option{background:#fff;color:var(--tx);}
       <div class="card-title">🔒 管理員驗證</div>
       <div class="form-grid">
         <div class="form-row">
-          <p style="margin-bottom:0.75rem;color:var(--tx2);font-size:14px;line-height:1.6;">為了安全，管理後台僅允許 Google 登入，請使用管理員白名單帳號登錄。</p>
+          <label>管理密碼</label>
+          <input type="password" id="admin-pw" placeholder="請輸入管理密碼">
         </div>
-        <div class="actions-row" style="flex-wrap:wrap;gap:10px;">
-          <button class="btn btn-s" onclick="signInWithGoogle()">Google 登入</button>
+        <div class="actions-row">
+          <button class="btn btn-b" onclick="adminLogin()">登入管理後台</button>
         </div>
       </div>
-      <div id="admin-status" style="margin-top:12px;color:var(--tx3);font-size:13px;">請使用管理員帳號登入</div>
     </div>
     <div id="admin-panel" style="display:none">
       <div class="page-header">
         <h1>⚙️ 管理後台</h1>
         <p>管理成員、積分與獎勵系統</p>
       </div>
-      <div class="actions-row" style="justify-content:flex-end;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
+      <div class="actions-row" style="justify-content:flex-end;margin-bottom:14px;">
         <button class="btn btn-b btn-sm" onclick="window.open('https://console.firebase.google.com/project/akuma-paradise-db/overview','_blank')">Firebase 控制台</button>
-        <button class="btn btn-s btn-sm" onclick="adminLogout()">登出</button>
       </div>
       <div class="form-grid g2">
         <div class="card">
@@ -366,12 +361,12 @@ select option{background:#fff;color:var(--tx);}
             <div class="form-row">
               <label>階級</label>
               <select id="new-m-tier">
-                <option value="" selected>無階級</option>
+                <option value="">無階級</option>
                 <option value="Champion">Champion 🟨</option>
                 <option value="Hero+">Hero+ 🌸</option>
                 <option value="Hero">Hero 💜</option>
                 <option value="VIP+">VIP+ 🔵</option>
-                <option value="VIP">VIP 💚</option>
+                <option value="VIP" selected>VIP 💚</option>
               </select>
             </div>
             <div class="form-row">
@@ -390,54 +385,31 @@ select option{background:#fff;color:var(--tx);}
             <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
               <button class="btn btn-s btn-sm" onclick="addEmptyMemberRow()">+ 新增空白列</button>
               <button class="btn btn-p btn-sm" onclick="saveMemberTable()">💾 儲存清單</button>
-              <button id="member-edit-toggle" class="panel-toggle" onclick="toggleSection('member-edit-panel','member-edit-toggle','展開編輯區','收合編輯區')">收合編輯區</button>
             </div>
           </div>
-          <div id="member-edit-panel">
-            <div id="member-sort-hint" style="margin-top:10px;font-size:13px;color:var(--tx3)">目前排序：職銜 正序</div>
-            <div class="table-wrap" style="overflow-x:auto;">
-              <table id="member-edit-table">
-                <thead>
-                  <tr>
-                    <th style="width:24px">#</th>
-                    <th class="sortable" onclick="setMemberSort('name')">玩家名稱 <span class="sort-arrow" id="sort-member-name">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('rank')">職銜 <span class="sort-arrow" id="sort-member-rank">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('tier')">階級 <span class="sort-arrow" id="sort-member-tier">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-member-joinDate">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('pts')">總分 <span class="sort-arrow" id="sort-member-pts">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('xp')">XP pts <span class="sort-arrow" id="sort-member-xp">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('weekly')">Weekly pts <span class="sort-arrow" id="sort-member-weekly">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('graid')">Graid pts <span class="sort-arrow" id="sort-member-graid">⇅</span></th>
-                    <th class="sortable" onclick="setMemberSort('bonus')">Bonus pts <span class="sort-arrow" id="sort-member-bonus">⇅</span></th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-            <p style="margin-top:10px;font-size:13px;color:var(--tx3)">直接在表格中編輯欄位；完成後按右上角「儲存清單」。新增成員時可以先加空白列。</p>
+          <div id="member-sort-hint" style="margin-top:10px;font-size:13px;color:var(--tx3)">目前排序：職銜 正序</div>
+          <div class="table-wrap" style="overflow-x:auto;">
+            <table id="member-edit-table">
+              <thead>
+                <tr>
+                  <th style="width:24px">#</th>
+                  <th class="sortable" onclick="setMemberSort('name')">玩家名稱 <span class="sort-arrow" id="sort-member-name">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('rank')">職銜 <span class="sort-arrow" id="sort-member-rank">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('tier')">階級 <span class="sort-arrow" id="sort-member-tier">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-member-joinDate">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('pts')">總分 <span class="sort-arrow" id="sort-member-pts">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('xp')">XP pts <span class="sort-arrow" id="sort-member-xp">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('weekly')">Weekly pts <span class="sort-arrow" id="sort-member-weekly">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('graid')">Graid pts <span class="sort-arrow" id="sort-member-graid">⇅</span></th>
+                  <th class="sortable" onclick="setMemberSort('bonus')">Bonus pts <span class="sort-arrow" id="sort-member-bonus">⇅</span></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
+          <p style="margin-top:10px;font-size:13px;color:var(--tx3)">直接在表格中編輯欄位；完成後按右上角「儲存清單」。新增成員時可以先加空白列。</p>
         </div>
-        <div class="card" style="margin-bottom:18px;padding:18px;">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <span>📑 成員資料顯示</span>
-            <button id="member-list-toggle" class="panel-toggle" onclick="toggleSection('member-list-panel','member-list-toggle','展開成員列表','收合成員列表')">收合成員列表</button>
-          </div>
-          <div id="member-list-panel">
-            <div id="a-mlist"></div>
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:18px;padding:18px;">
-          <div class="card-title">📥 匯入成員資料（TXT）</div>
-          <div class="form-row">
-            <label>成員匯入檔案</label>
-            <input type="file" id="member-import-file" accept=".txt">
-          </div>
-          <p style="margin-top:8px;font-size:13px;color:var(--tx3)">每行格式：名稱,職銜,階級,入會日期,XP,Weekly,Graid,Bonus。職銜可填 0-6 或 會長/成員。日期例：2026-05-25。</p>
-          <div class="actions-row">
-            <button class="btn btn-s" onclick="downloadMemberImportTemplate()">下載匯入範例</button>
-            <button class="btn btn-b" onclick="importMemberTxt()">匯入成員資料</button>
-          </div>
-        </div>
+        <div id="a-mlist"></div>
       </div>
       <div class="card">
         <div class="card-title">⚡ 匯入 Guild XP (20M = 1pt)</div>
@@ -490,7 +462,6 @@ select option{background:#fff;color:var(--tx);}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
@@ -504,41 +475,18 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-const adminEmails = ['your.admin@mail.com']; // Set your admin email(s) here
 
 // 核心資料連結
 const gM = () => window.m || [];
-const isAdminUser = () => {
-  const user = auth.currentUser;
-  if(!user) return false;
-  return adminEmails.includes((user.email || '').toLowerCase());
-};
-const sM = (d) => {
-  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
-  return set(ref(db, 'members'), d);
-};
+const sM = (d) => set(ref(db, 'members'), d);
 const gRw = () => window.rw || [];
-const sRw = (d) => {
-  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
-  return set(ref(db, 'rewards'), d);
-};
+const sRw = (d) => set(ref(db, 'rewards'), d);
 const gRp = () => window.rp || [];
-const sRp = (d) => {
-  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
-  return set(ref(db, 'reports'), d);
-};
+const sRp = (d) => set(ref(db, 'reports'), d);
 const gRd = () => window.rd || [];
-const sRd = (d) => {
-  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
-  return set(ref(db, 'redeems'), d);
-};
+const sRd = (d) => set(ref(db, 'redeems'), d);
 const gL = () => window.logs || [];
-const sL = (d) => {
-  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
-  return set(ref(db, 'logs'), d);
-};
+const sL = (d) => set(ref(db, 'logs'), d);
 
 // 監聽雲端變動
 onValue(ref(db, 'members'), s => { 
@@ -569,24 +517,6 @@ const tierOrder = { Champion:0, 'Hero+':1, Hero:2, 'VIP+':3, VIP:4 };
 const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
 const fmt = t => new Date(t).toLocaleString();
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-const handleAuthState = (user) => {
-  const loginCard = document.getElementById('admin-login');
-  const adminPanel = document.getElementById('admin-panel');
-  const status = document.getElementById('admin-status');
-  const isAdmin = !!user && adminEmails.includes((user.email || '').toLowerCase());
-  window.isA = isAdmin;
-  if(user && isAdmin){
-    if(loginCard) loginCard.style.display = 'none';
-    if(adminPanel) adminPanel.style.display = 'block';
-    if(status) status.innerHTML = `管理員已登入：${esc(user.email)}`;
-    renderAM(); renderARp(); renderARd(); renderARw();
-  } else {
-    if(loginCard) loginCard.style.display = 'block';
-    if(adminPanel) adminPanel.style.display = 'none';
-    if(status) status.innerHTML = user ? '此帳號無管理員權限' : '請使用管理員帳號登入';
-  }
-};
-onAuthStateChanged(auth, handleAuthState);
 const compareLeaderboard = (a,b) => {
   const key = window.lbSort.key;
   let cmp = 0;
@@ -881,30 +811,11 @@ window.applyRedeem = () => {
 };
 
 // 管理員功能
-window.signInWithGoogle = () => {
-  signInWithPopup(auth, provider)
-    .then(result => {
-      const user = result.user;
-      if(!isAdminUser()){
-        signOut(auth);
-        toast('此帳號無管理員權限','error');
-        return;
-      }
-      toast('Google 登入成功','success');
-    })
-    .catch(err => {
-      console.error(err);
-      toast('Google 登入失敗','error');
-    });
-};
-
-window.adminLogout = () => {
-  signOut(auth).then(() => {
-    toast('已登出','success');
-  }).catch(err => {
-    console.error(err);
-    toast('登出失敗','error');
-  });
+window.adminLogin = () => {
+  if(document.getElementById('admin-pw').value==='akuma888'){
+    window.isA=true; document.getElementById('admin-login').style.display='none'; document.getElementById('admin-panel').style.display='block';
+    renderAM(); renderARp(); renderARd(); renderARw();
+  } else toast('密碼錯誤','error');
 };
 
 function renderAM(){
@@ -986,8 +897,8 @@ window.addEmptyMemberRow = () => {
   const blank = `<tr data-id="">
     <td>${rowCount}</td>
     <td><input type="text" value="" class="member-name" placeholder="玩家名稱"></td>
-    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4">領隊</option><option value="5">正式成員</option><option value="6" selected>成員</option></select></td>
-    <td><select class="member-tier"><option value="" selected>無階級</option><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP">VIP</option></select></td>
+    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4" selected>領隊</option><option value="5">正式成員</option><option value="6">成員</option></select></td>
+    <td><select class="member-tier"><option value="">無階級</option><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP" selected>VIP</option></select></td>
     <td><input type="date" value="" class="member-date"></td>
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsXP"></td>
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsWeekly"></td>
@@ -995,103 +906,6 @@ window.addEmptyMemberRow = () => {
     <td><input type="number" min="0" step="0.1" value="0" class="member-ptsBonus"></td>
   </tr>`;
   tbody.insertAdjacentHTML('beforeend', blank);
-};
-
-window.toggleSection = (panelId, btnId, openLabel, closeLabel) => {
-  const panel = document.getElementById(panelId);
-  const button = document.getElementById(btnId);
-  if(!panel || !button) return;
-  const hidden = panel.classList.toggle('panel-hidden');
-  button.textContent = hidden ? openLabel : closeLabel;
-};
-
-window.importMemberTxt = async () => {
-  const fileInput = document.getElementById('member-import-file');
-  if(!fileInput || !fileInput.files || fileInput.files.length === 0) return toast('請先選擇 TXT 匯入檔案','error');
-  const file = fileInput.files[0];
-  const raw = await file.text();
-  const result = parseMemberImportText(raw);
-  if(result.added === 0 && result.updated === 0) {
-    return toast('沒有可匯入的成員資料','error');
-  }
-  sM(result.members);
-  toast(`匯入完成：新增 ${result.added} 筆，更新 ${result.updated} 筆`,'success');
-  fileInput.value = '';
-  renderMemberEditTable();
-  renderAM();
-};
-
-window.downloadMemberImportTemplate = () => {
-  const sample = [
-    'Erwin,6,VIP,2026-05-25,0,120,30,10',
-    'Steven,5,Hero+,2026-03-15,0,90,18,5',
-    'Amber,4,,2026-01-10,0,55,12,3'
-  ].join('\n');
-  const blob = new Blob([sample], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'member-import-template.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-const parseMemberImportText = (raw) => {
-  const lines = raw.split(/\r?\n/);
-  const members = gM();
-  let added = 0;
-  let updated = 0;
-
-  for(const line of lines){
-    const row = line.trim();
-    if(!row || row.startsWith('#')) continue;
-    const parts = row.split(',').map(p=>p.trim());
-    const name = parts[0];
-    if(!name) continue;
-    const rankRaw = parts[1] || '';
-    const tier = parts[2] || '';
-    const joinDateRaw = parts[3] || '';
-    const ptsXP = parseFloat(parts[4] || '0') || 0;
-    const ptsWeekly = parseFloat(parts[5] || '0') || 0;
-    const ptsGraid = parseFloat(parts[6] || '0') || 0;
-    const ptsBonus = parseFloat(parts[7] || '0') || 0;
-
-    let joinDate = Date.parse(joinDateRaw);
-    if(isNaN(joinDate) || !joinDateRaw) {
-      const date = new Date(joinDateRaw);
-      joinDate = isNaN(date.getTime()) ? null : date.getTime();
-    }
-    if(!joinDate) {
-      continue;
-    }
-
-    const existing = members.find(m => m.name === name);
-    const rank = normalizeRank(rankRaw || '6');
-    const memberData = {
-      id: existing?.id || Date.now() + Math.floor(Math.random() * 1000),
-      name,
-      rank,
-      tier,
-      joinDate,
-      ptsXP,
-      ptsWeekly,
-      ptsGraid,
-      ptsBonus,
-      wCount: existing?.wCount || 0
-    };
-
-    if(existing){
-      Object.assign(existing, memberData);
-      updated += 1;
-    } else {
-      members.push(memberData);
-      added += 1;
-    }
-  }
-
-  return { members, added, updated };
 };
 
 window.saveMemberTable = () => {
