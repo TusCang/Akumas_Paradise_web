@@ -315,15 +315,9 @@ select option{background:#fff;color:var(--tx);}
       <div class="card-title">🔒 管理員驗證</div>
       <div class="form-grid">
         <div class="form-row">
-          <label>管理員信箱</label>
-          <input type="email" id="admin-email" placeholder="admin@example.com">
-        </div>
-        <div class="form-row">
-          <label>管理密碼</label>
-          <input type="password" id="admin-pw" placeholder="請輸入管理密碼">
+          <p style="margin-bottom:0.75rem;color:var(--tx2);font-size:14px;line-height:1.6;">為了安全，管理後台僅允許 Google 登入，請使用管理員白名單帳號登錄。</p>
         </div>
         <div class="actions-row" style="flex-wrap:wrap;gap:10px;">
-          <button class="btn btn-b" onclick="adminLogin()">登入管理後台</button>
           <button class="btn btn-s" onclick="signInWithGoogle()">Google 登入</button>
         </div>
       </div>
@@ -496,7 +490,7 @@ select option{background:#fff;color:var(--tx);}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
@@ -512,13 +506,14 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
-const adminEmails = ['admin@example.com']; // Replace with your admin email(s)
+const adminEmails = ['your.admin@mail.com']; // Set your admin email(s) here
 
 // 核心資料連結
 const gM = () => window.m || [];
 const isAdminUser = () => {
   const user = auth.currentUser;
-  return user && adminEmails.includes((user.email || '').toLowerCase());
+  if(!user) return false;
+  return adminEmails.includes((user.email || '').toLowerCase());
 };
 const sM = (d) => {
   if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
@@ -886,25 +881,11 @@ window.applyRedeem = () => {
 };
 
 // 管理員功能
-window.adminLogin = () => {
-  const email = document.getElementById('admin-email').value.trim();
-  const password = document.getElementById('admin-pw').value;
-  if(!email || !password) return toast('請輸入管理員信箱與密碼','error');
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      toast('登入成功','success');
-      document.getElementById('admin-pw').value = '';
-    })
-    .catch(err => {
-      console.error(err);
-      toast('登入失敗，請檢查帳號或密碼','error');
-    });
-};
 window.signInWithGoogle = () => {
   signInWithPopup(auth, provider)
     .then(result => {
       const user = result.user;
-      if(!adminEmails.includes((user.email || '').toLowerCase())){
+      if(!isAdminUser()){
         signOut(auth);
         toast('此帳號無管理員權限','error');
         return;
