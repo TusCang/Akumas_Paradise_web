@@ -110,7 +110,7 @@ tr:hover td{background:#FDF5F1;}
 @media(max-width:640px){.g2,.g3{grid-template-columns:1fr;}}
 .form-row{display:flex;flex-direction:column;}
 label{display:block;font-size:12px;color:var(--tx3);margin-bottom:5px;letter-spacing:.4px;}
-input[type=text],input[type=number],input[type=password],select,textarea{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input[type=text],input[type=number],input[type=password],input[type=url],input[type=date],select,textarea{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;}
 input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-g);}
 select option{background:#fff;color:var(--tx);}
 .section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;}
@@ -122,6 +122,8 @@ select option{background:#fff;color:var(--tx);}
 .btn-b:hover{transform:translateY(-1px);}
 .btn-s{background:#fff;color:var(--tx);border:1px solid #D0D4DF;}
 .btn-s:hover{background:#F0F2F6;}
+.btn-r{background:linear-gradient(135deg,#1FA56A,#168A57);color:#fff;box-shadow:0 4px 14px rgba(31,165,106,.25);}
+.btn-r:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(31,165,106,.35);}
 .btn-d{background:rgba(200,40,40,.08);color:#C0281E;border:1px solid rgba(200,40,40,.18);}
 .btn-d:hover{background:rgba(200,40,40,.15);}
 .btn-sm{padding:5px 11px;font-size:12px;}
@@ -202,7 +204,7 @@ select option{background:#fff;color:var(--tx);}
       <p>Wynncraft 公會積分管理系統 — 追蹤貢獻、兌換獎勵</p>
       <div class="hero-btns">
         <button class="btn btn-p" onclick="navTo('leaderboard')">📊 積分排行</button>
-        <button class="btn btn-s" onclick="navTo('report')">📝 申報任務</button>
+        <button class="btn btn-r" onclick="navTo('report')">📝 申報任務</button>
         <button class="btn btn-b" onclick="navTo('redeem')">🎁 獎勵清單</button>
       </div>
     </div>
@@ -250,7 +252,7 @@ select option{background:#fff;color:var(--tx);}
       </div>
     </div>
     <div class="card">
-      <div class="card-title">近 30 天分數紀錄</div>
+      <div class="card-title">最近 10 筆分數紀錄</div>
       <div id="score-log"></div>
     </div>
   </div>
@@ -276,7 +278,8 @@ select option{background:#fff;color:var(--tx);}
         <input type="url" id="graid-link" placeholder="https://...">
         <div style="margin-top:8px;font-size:12px;color:var(--tx3);line-height:1.5;">
           1. 將截圖貼在 DC 的私人頻道內<br>
-          2. 右鍵複製該圖片的連結，貼上此處即可
+          2. 右鍵複製該圖片的連結，貼上此處即可<br>
+          3. 省省吧，就算給我貼蕾娜色圖我也不會給你通過的
         </div>
       </div>
       <div class="actions-row"><button class="btn btn-p" onclick="submitGraid()">✓ 提交 Graid 申報</button></div>
@@ -293,7 +296,8 @@ select option{background:#fff;color:var(--tx);}
         <input type="url" id="weekly-link" placeholder="https://...">
         <div style="margin-top:8px;font-size:12px;color:var(--tx3);line-height:1.5;">
           1. 將截圖貼在 DC 的私人頻道內<br>
-          2. 右鍵複製該圖片的連結，貼上此處即可
+          2. 右鍵複製該圖片的連結，貼上此處即可<br>
+          3. 省省吧，就算給我貼蕾娜色圖我也不會給你通過的
         </div>
       </div>
       <div class="actions-row"><button class="btn btn-b" onclick="submitWeekly()">✓ 提交 Weekly Obj 申報</button></div>
@@ -389,9 +393,9 @@ select option{background:#fff;color:var(--tx);}
           </div>
         </div>
         <div class="card" style="margin-bottom:18px;padding:18px;">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;">
             <span>👥 成員名單編輯</span>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;">
               <button class="btn btn-s btn-sm" onclick="addEmptyMemberRow()">+ 新增空白列</button>
               <button class="btn btn-p btn-sm" onclick="saveMemberTable()">💾 儲存清單</button>
               <button id="member-edit-toggle" class="panel-toggle" onclick="toggleSection('member-edit-panel','member-edit-toggle','展開編輯區','收合編輯區')">展開編輯區</button>
@@ -422,9 +426,9 @@ select option{background:#fff;color:var(--tx);}
           </div>
         </div>
         <div class="card" style="margin-bottom:18px;padding:18px;">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;">
             <span>📑 成員資料顯示</span>
-            <button id="member-list-toggle" class="panel-toggle" onclick="toggleSection('member-list-panel','member-list-toggle','展開成員列表','收合成員列表')">展開成員列表</button>
+            <button id="member-list-toggle" class="panel-toggle" style="margin-left:auto;" onclick="toggleSection('member-list-panel','member-list-toggle','展開成員列表','收合成員列表')">展開成員列表</button>
           </div>
           <div id="member-list-panel" class="panel-hidden">
             <div id="a-mlist"></div>
@@ -451,7 +455,9 @@ select option{background:#fff;color:var(--tx);}
         </div>
         <div class="actions-row">
           <button class="btn btn-b" onclick="importXP()">批次增加積分</button>
+          <button class="btn btn-s" onclick="cleanupOldLogs()">清理舊 Log（省空間）</button>
         </div>
+        <p style="margin-top:8px;font-size:13px;color:var(--tx3)">會保留最近 14 天且最多 300 筆紀錄。</p>
       </div>
       <div class="card">
         <div class="card-title">🛠️ 獎勵展示維護</div>
@@ -914,7 +920,7 @@ function renderRedeem(){
         ${items.length ? items.map(r=>`<div class="reward-card"><div><div class="reward-card-title">${esc(r.name)}</div><div class="reward-card-meta"><span class="reward-card-price">${r.cost} pts</span><span class="reward-card-stock">庫存 ${r.stock}</span></div></div><div style="margin-top:18px;font-size:13px;color:var(--tx3);line-height:1.5;">僅供展示，線下兌換處理</div></div>`).join('') : `<div class="reward-card empty">暫無展示項目</div>`}
       </div>
     </div>`;
-  el.innerHTML = renderSection('遊戲內展示', game, 'game') + renderSection('遊戲外展示', outside, 'outside');
+  el.innerHTML = renderSection('遊戲內獎勵展示項目', game, 'game') + renderSection('遊戲外獎勵展示項目', outside, 'outside');
 }
 window.applyRedeem = () => {
   toast('此頁僅作展示，實際兌換請線下處理','info');
@@ -1180,6 +1186,18 @@ window.importXP = () => {
   lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx){ const added = parseFloat(v)/20000000; if(!isNaN(added) && added>0){ tx.ptsXP=(tx.ptsXP||0)+added; addLog(tx.name, added, 'Guild XP 匯入'); } }});
   sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
 };
+window.cleanupOldLogs = () => {
+  if(!isAdminUser()) return toast('需管理員登入才能清理','error');
+  const now = Date.now();
+  const cutoff = now - (1000 * 60 * 60 * 24 * 14); // keep 14 days
+  const allLogs = [...gL()];
+  const pruned = allLogs
+    .filter(l => l && (l.ts || 0) >= cutoff)
+    .sort((a,b)=>(b.ts||0)-(a.ts||0))
+    .slice(0,300);
+  sL(pruned);
+  toast(`清理完成：${allLogs.length} → ${pruned.length} 筆`,'success');
+};
 
 function renderARp(){
   const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
@@ -1241,7 +1259,7 @@ function renderARw(){
       <div class="card-title">${title}</div>
       ${items.length ? items.map(r=>`<div class="card reward-admin-card" draggable="true" data-id="${r.id}" data-category="${r.category}" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap" ondragstart="onRewardDragStart(event, ${r.id})" ondragover="onRewardDragOver(event)" ondragenter="onRewardDragEnter(event)" ondragleave="onRewardDragLeave(event)" ondrop="onRewardDrop(event, ${r.id})"><div class="reward-card-handle">☰</div><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="font-size:12px;color:var(--tx3);">位置 <input type="number" value="${parseInt(r.position)||0}" onchange="updateRwPosition(${r.id}, this.value)" style="width:64px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:8px;"></label><span style="font-size:12px;color:var(--tx3);">${r.category==='outside'?'遊戲外':'遊戲內'}</span><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無項目</div>`}
     </div>`;
-  document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內展示項目', game) + renderGroup('遊戲外展示項目', outside);
+  document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內獎勵展示項目', game) + renderGroup('遊戲外獎勵展示項目', outside);
 }
 window.addRw = () => {
   const name = document.getElementById('new-rw-name').value.trim();
