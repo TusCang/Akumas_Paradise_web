@@ -315,13 +315,17 @@ select option{background:#fff;color:var(--tx);}
       <div class="card-title">🔒 管理員驗證</div>
       <div class="form-grid">
         <div class="form-row">
-          <p style="margin-bottom:0.75rem;color:var(--tx2);font-size:14px;line-height:1.6;">請使用管理員 Google 帳號登入後台。</p>
+          <p style="margin-bottom:0.75rem;color:var(--tx2);font-size:14px;line-height:1.6;">請輸入管理員密碼登入後台。</p>
         </div>
         <div class="actions-row" style="flex-wrap:wrap;gap:10px;">
-          <button class="btn btn-s" onclick="adminLogin()">Google 管理員登入</button>
+          <button class="btn btn-s" onclick="adminLogin()">管理員登入</button>
+        </div>
+        <div class="form-row" style="max-width:340px;margin-top:12px;">
+          <label>管理員密碼</label>
+          <input type="password" id="admin-passcode" placeholder="輸入管理員密碼" autocomplete="current-password">
         </div>
       </div>
-      <div id="admin-status" style="margin-top:12px;color:var(--tx3);font-size:13px;">請使用 Google 管理員帳號登入</div>
+      <div id="admin-status" style="margin-top:12px;color:var(--tx3);font-size:13px;">請輸入管理員密碼登入</div>
     </div>
     <div id="admin-panel" style="display:none">
       <div class="page-header">
@@ -490,7 +494,7 @@ select option{background:#fff;color:var(--tx);}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
@@ -505,10 +509,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-const adminEmails = [
-  'your-admin@gmail.com'
-];
+const adminPasscodeHash = '803f72d45a0edfe92ba8eb29f88be8e0545c39145ab750b369d7d8d5d84a5c40';
 let adminSessionActive = false;
 let currentUserUid = null;
 
@@ -612,7 +613,7 @@ const updateAdminUI = () => {
   } else {
     if(loginCard) loginCard.style.display = 'block';
     if(adminPanel) adminPanel.style.display = 'none';
-    if(status) status.innerHTML = '請使用 Google 管理員帳號登入';
+    if(status) status.innerHTML = '請輸入管理員密碼登入';
   }
 };
 updateAdminUI();
@@ -626,18 +627,8 @@ const ensureAnonymousSession = async () => {
   }
 };
 onAuthStateChanged(auth, (user) => {
-  const email = (user?.email || '').toLowerCase();
-  const isAdmin = !!user && !user.isAnonymous && adminEmails.includes(email);
-  adminSessionActive = isAdmin;
   currentUserUid = user?.uid || null;
-  updateAdminUI();
-  if(user && !user.isAnonymous && !isAdmin){
-    signOut(auth).then(() => ensureAnonymousSession()).catch(() => ensureAnonymousSession());
-    toast('此 Google 帳號無管理員權限','error');
-  }
-  if(!user){
-    ensureAnonymousSession();
-  }
+  if(!user) ensureAnonymousSession();
 });
 ensureAnonymousSession();
 const compareLeaderboard = (a,b) => {
@@ -932,13 +923,19 @@ window.applyRedeem = () => {
 // 管理員功能
 window.adminLogin = async () => {
   try {
-    const result = await signInWithPopup(auth, provider);
-    const email = (result?.user?.email || '').toLowerCase();
-    if(!adminEmails.includes(email)){
-      await signOut(auth);
-      await ensureAnonymousSession();
-      return toast('此 Google 帳號無管理員權限','error');
+    const passInput = document.getElementById('admin-passcode');
+    const passcode = (passInput?.value || '').trim();
+    if(!passcode) return toast('請先輸入管理員密碼','error');
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passcode));
+    const hashHex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    if(hashHex !== adminPasscodeHash){
+      adminSessionActive = false;
+      updateAdminUI();
+      return toast('管理員密碼錯誤','error');
     }
+    adminSessionActive = true;
+    if(passInput) passInput.value = '';
+    updateAdminUI();
     toast('管理員登入成功','success');
   } catch(err) {
     console.error(err);
@@ -946,15 +943,10 @@ window.adminLogin = async () => {
   }
 };
 
-window.adminLogout = async () => {
-  try {
-    await signOut(auth);
-    await ensureAnonymousSession();
-    toast('已登出','success');
-  } catch (err) {
-    console.error(err);
-    toast('登出失敗','error');
-  }
+window.adminLogout = () => {
+  adminSessionActive = false;
+  updateAdminUI();
+  toast('已登出','success');
 };
 
 function renderAM(){
