@@ -442,7 +442,11 @@ onValue(ref(db, 'members'), s => {
   renderHome(); 
   if(window.isA) renderAM();
 });
-onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
+onValue(ref(db, 'rewards'), s => {
+  window.rw = s.val() || [];
+  if(document.getElementById('reward-list')) renderRedeem();
+  if(window.isA) renderARw();
+});
 onValue(ref(db, 'reports'), s => { window.rp = normalizeReportList(s.val()); if(window.isA) renderARp(); });
 onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; });
 onValue(ref(db, 'logs'), s => { window.logs = s.val() || []; renderLeaderboard(); });
@@ -737,16 +741,22 @@ window.applyRedeem = () => {
 
 // 管理員功能
 window.adminLogin = async () => {
-  const passInput = document.getElementById('admin-passcode');
-  const passcode = (passInput?.value || '').trim();
-  if(!passcode) return toast('請先輸入密碼','error');
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passcode));
-  const hashHex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
-  if(hashHex !== adminPasscodeHash) return toast('密碼錯誤','error');
-  sessionStorage.setItem('adminUnlocked','1');
-  if(passInput) passInput.value = '';
-  updateAdminUI();
-  toast('後台已解鎖','success');
+  try {
+    const passInput = document.getElementById('admin-passcode');
+    const passcode = (passInput?.value || '').trim();
+    if(!passcode) return toast('請先輸入密碼','error');
+    if(!window.crypto || !window.crypto.subtle) return toast('瀏覽器不支援安全驗證，請換 Chrome/Edge/Safari','error');
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passcode));
+    const hashHex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+    if(hashHex !== adminPasscodeHash) return toast('密碼錯誤','error');
+    sessionStorage.setItem('adminUnlocked','1');
+    if(passInput) passInput.value = '';
+    updateAdminUI();
+    toast('後台已解鎖','success');
+  } catch (err) {
+    console.error(err);
+    toast('解鎖失敗，請重新整理後再試','error');
+  }
 };
 
 window.adminLogout = () => {
@@ -760,7 +770,7 @@ function renderAM(){
   el.innerHTML = gM().slice().sort((a,b)=> normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name)).map(m=>{ const rank = normalizeRank(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'成員'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${normalizeRank(m.rank)===0?'selected':''}>會長</option><option value="1" ${normalizeRank(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${normalizeRank(m.rank)===2?'selected':''}>執事</option><option value="3" ${normalizeRank(m.rank)===3?'selected':''}>助理</option><option value="4" ${normalizeRank(m.rank)===4?'selected':''}>領隊</option><option value="5" ${normalizeRank(m.rank)===5?'selected':''}>正式成員</option><option value="6" ${normalizeRank(m.rank)===6?'selected':''}>成員</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
   renderMemberEditTable();
 }
-window.addM = () => { 
+window.addM = async () => { 
   const n=document.getElementById('new-m-name').value; 
   const r=parseInt(document.getElementById('new-m-rank').value)||6;
   const t=document.getElementById('new-m-tier').value;
@@ -782,7 +792,12 @@ window.addM = () => {
     tier:t,
     joinDate:new Date(d).getTime()
   }); 
-  sM(m); 
+  try {
+    await sM(m);
+  } catch (err) {
+    console.error(err);
+    return toast('新增失敗，請檢查 Firebase 規則','error');
+  }
   document.getElementById('new-m-name').value=''; 
   document.getElementById('new-m-rank').value='6';
   document.getElementById('new-m-tier').value='VIP';
@@ -790,6 +805,7 @@ window.addM = () => {
   toast('成員已新增','success');
 };
 window.updateMember = (name) => {
+window.updateMember = async (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
   const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
@@ -802,11 +818,26 @@ window.updateMember = (name) => {
   m.ptsBonus = 0;
   m.rank = newRank;
   m.tier = newTier;
-  sM(gM());
+  try {
+    await sM(gM());
+  } catch (err) {
+    console.error(err);
+    return toast('更新失敗，請檢查 Firebase 規則','error');
+  }
   if(newPts > oldTotal) addLog(m.name, newPts - oldTotal, '管理員調整分數');
   toast('成員資訊已更新','success');
 };
-window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
+window.delM = async (n) => {
+  if(!confirm('確定刪除？')) return;
+  const m=gM().filter(x=>x.name!==n);
+  try {
+    await sM(m);
+    toast('已刪除成員','success');
+  } catch (err) {
+    console.error(err);
+    toast('刪除失敗，請檢查 Firebase 規則','error');
+  }
+};
 
 function renderMemberEditTable(){
   const tbody = document.querySelector('#member-edit-table tbody');
@@ -997,10 +1028,10 @@ window.cleanupOldLogs = () => {
 function renderARp(){
   const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
   window.pendingReports = rp;
-  el.innerHTML = rp.map((r,idx)=>`<div class="card" style="margin:0"><div><b>${r.type==='graid'?'⚔️ Graid':'🎯 Weekly'}</b> - ${r.players.join(', ')}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRepAt(${idx})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
+  const headerActions = rp.length ? `<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-p btn-sm" onclick="approveAllReports()">全部核准</button><button class="btn btn-s btn-sm" onclick="rejectAllReports()">全部拒絕</button><span style="font-size:12px;color:var(--tx3);align-self:center;">待審 ${rp.length} 筆</span></div>` : '';
+  el.innerHTML = headerActions + (rp.map((r,idx)=>`<div class="card" style="margin:0"><div><b>${r.type==='graid'?'⚔️ Graid':'🎯 Weekly'}</b> - ${r.players.join(', ')}</div><div style="font-size:12px;color:var(--tx3);margin:6px 0;">申報時間：${r.ts ? new Date(r.ts).toLocaleString('zh-TW') : '未知時間'}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-p btn-sm" onclick="appRepAt(${idx})">核准</button><button class="btn btn-s btn-sm" onclick="rejectRepAt(${idx})">拒絕</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>');
 }
-window.appRepAt = async (idx) => {
-  const r = (window.pendingReports || [])[idx];
+const approveReport = async (r) => {
   if(!r) return toast('找不到該申報','error');
   const m=gM();
   const allReports = gRp();
@@ -1031,6 +1062,45 @@ window.appRepAt = async (idx) => {
   } catch (err) {
     console.error(err);
     toast('核准失敗，請檢查 Firebase 權限/資料格式','error');
+  }
+};
+window.appRepAt = async (idx) => {
+  const r = (window.pendingReports || [])[idx];
+  await approveReport(r);
+};
+const rejectReport = async (r) => {
+  if(!r) return toast('找不到該申報','error');
+  try {
+    if(r._path){
+      await set(ref(db, `${r._path}/status`), 'rejected');
+    } else {
+      const allReports = gRp();
+      const target = allReports.find(x => x.id === r.id);
+      if(target) target.status = 'rejected';
+      await sRp(allReports);
+    }
+    toast('已拒絕申報','info');
+  } catch (err) {
+    console.error(err);
+    toast('拒絕失敗，請檢查 Firebase 權限/資料格式','error');
+  }
+};
+window.rejectRepAt = async (idx) => {
+  const r = (window.pendingReports || [])[idx];
+  await rejectReport(r);
+};
+window.approveAllReports = async () => {
+  const list = [...(window.pendingReports || [])];
+  if(list.length === 0) return toast('目前沒有待審申報','info');
+  for(const r of list){
+    await approveReport(r);
+  }
+};
+window.rejectAllReports = async () => {
+  const list = [...(window.pendingReports || [])];
+  if(list.length === 0) return toast('目前沒有待審申報','info');
+  for(const r of list){
+    await rejectReport(r);
   }
 };
 
