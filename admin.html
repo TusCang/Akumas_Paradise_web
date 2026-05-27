@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akuma Paradise — Admin Console</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+
+:root {
+  --orange:#E8500A; --orange-l:#FF6B2B; --orange-d:#C03D00; --orange-g:rgba(232,80,10,0.15);
+  --blue:#1478CC;   --blue-l:#2A90E8;   --blue-d:#0D5FA0;
+  --bg:#F4F5F7; --bg2:#FFFFFF; --bdr:rgba(232,80,10,0.14); --bdr2:rgba(20,120,204,0.16); --bdr3:#D8DCE8;
+  --tx:#1A1E2A; --tx2:#4A5268; --tx3:#8A93A8;
+  --font:'Microsoft JhengHei','Noto Sans TC','微軟正黑體',sans-serif;
+  --r:10px; --r2:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 10% 0%,rgba(232,80,10,0.05) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 90% 100%,rgba(20,120,204,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr);padding:0 28px;display:flex;align-items:center;gap:20px;height:62px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--orange),var(--orange-d));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;box-shadow:0 0 14px var(--orange-g);flex-shrink:0;}
+.logo-title{font-size:15px;font-weight:700;color:var(--tx);}
+.logo-sub{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+nav{display:flex;gap:2px;margin-left:auto;}
+nav button{background:none;border:none;color:var(--tx2);font-family:var(--font);font-size:15px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+nav button:hover{color:var(--tx);background:rgba(0,0,0,0.05);}
+nav button.active{color:var(--orange);background:rgba(232,80,10,0.08);}
+nav button#n-admin{border:1px solid rgba(20,120,204,0.35);background:rgba(20,120,204,0.08);color:var(--blue-d);}
+nav button#n-admin:hover{background:rgba(20,120,204,0.14);}
+nav button#n-admin.active{border-color:rgba(20,120,204,0.55);background:rgba(20,120,204,0.14);color:var(--blue-d);}
+#admin-toggle-btn{margin-left:8px;padding:7px 14px;border-radius:8px;border:1px solid var(--bdr2);background:rgba(20,120,204,0.07);color:var(--blue-l);font-family:var(--font);font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+#admin-toggle-btn:hover{background:rgba(20,120,204,0.13);}
+#admin-toggle-btn.on{border-color:var(--bdr);color:var(--orange);background:rgba(232,80,10,0.07);}
+
+main{position:relative;z-index:1;padding:28px;max-width:1200px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-header{margin-bottom:28px;}
+.page-header h1{text-align:center;font-size:48px;font-weight:900;letter-spacing:-1px;color:var(--tx);}
+.page-header h1 span{color:inherit;}
+.page-header p{margin-top:8px;color:var(--tx2);font-size:15px;}
+
+.card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r2);padding:22px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,0.04);}
+.card-title{font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:1.6px;color:var(--orange);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';display:inline-block;width:4px;height:20px;background:var(--orange);border-radius:3px;}
+
+.card-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.search-box{display:flex;flex-direction:column;gap:6px;min-width:220px;max-width:360px;flex:1;}
+.search-box label{font-size:12px;color:var(--tx3);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.search-box input{width:100%;}
+.sort-hint{font-size:13px;color:var(--tx2);white-space:nowrap;}
+th.sortable{cursor:pointer;user-select:none;}
+th.sortable:hover{color:var(--orange);}
+.sort-arrow{margin-left:4px;font-size:12px;opacity:.6;}
+#lb-body tr.highlight td{background:rgba(232,80,10,0.1);}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+.stat-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),transparent);}
+.stat-value{font-size:30px;font-weight:900;color:var(--tx);line-height:1;}
+.stat-label{font-size:12px;color:var(--tx3);margin-top:5px;}
+
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bdr3);}
+.reward-list{display:grid;gap:26px;}
+.reward-section{margin-bottom:24px;}
+.reward-section-title{display:inline-flex;align-items:center;padding:12px 16px;border-radius:999px;font-size:15px;font-weight:800;letter-spacing:.5px;background:rgba(20,120,204,.1);color:var(--blue-d);margin-bottom:18px;}
+.reward-section-title.reward-outside{background:rgba(20,160,80,.12);color:#0E8A3A;}
+.reward-card-grid{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:18px;}
+.reward-card{background:#fff;border:1px solid rgba(216,220,232,.7);border-radius:22px;padding:22px;box-shadow:0 15px 30px rgba(0,0,0,.05);display:flex;flex-direction:column;justify-content:space-between;min-height:180px;cursor:grab;}
+.reward-card.dragging{opacity:0.45;}
+.reward-card.drag-over{border-color:var(--blue);box-shadow:0 0 0 4px rgba(20,120,204,0.12);}
+.reward-card-title{font-size:18px;font-weight:900;color:var(--tx);margin-bottom:14px;}
+.reward-card-handle{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:12px;background:rgba(20,120,204,.08);color:var(--blue);font-size:16px;cursor:grab;margin-right:10px;}
+.reward-card-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--tx2);}
+.reward-card-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--tx2);}
+.reward-card-price{font-size:16px;font-weight:900;color:var(--orange);}
+.reward-card-stock{font-size:13px;color:var(--tx3);}
+.reward-card.empty{border-style:dashed;color:var(--tx3);text-align:center;min-height:100px;display:flex;align-items:center;justify-content:center;}
+@media(max-width:980px){.reward-card-grid{grid-template-columns:repeat(2,minmax(220px,1fr));}}
+@media(max-width:680px){.reward-card-grid{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;}
+thead{background:#FBF3EE;}
+th{padding:14px 15px;text-align:left;font-size:13px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--bdr3);white-space:nowrap;}
+td{padding:13px 15px;border-bottom:1px solid #EEF5F7;color:var(--tx);font-size:15px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#FDF5F1;}
+#member-edit-table td{padding:10px 12px;}
+#member-edit-table input, #member-edit-table select{width:100%;border:1px solid rgba(216,220,232,.7);border-radius:10px;background:#fff;color:var(--tx);font-family:var(--font);font-size:14px;padding:8px 10px;outline:none;}
+#member-edit-table input:focus, #member-edit-table select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,80,10,0.14);}
+#member-edit-table th{padding:12px 14px;}
+#member-edit-table tbody tr:hover td{background:rgba(232,80,10,0.05);}
+.rb{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:12px;font-weight:700;}
+.r1{background:rgba(255,215,0,.15);color:#D4A800;} .r2{background:rgba(160,160,160,.15);color:#888;} .r3{background:rgba(180,100,30,.15);color:#B46318;} .rn{background:rgba(232,80,10,.07);color:var(--tx3);}
+.pts-pill{display:inline-block;background:linear-gradient(135deg,rgba(232,80,10,.12),rgba(232,80,10,.05));border:1px solid rgba(232,80,10,.28);color:var(--orange-l);padding:3px 10px;border-radius:20px;font-weight:700;font-size:13px;}
+
+.tier-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.5px;}
+.tier-champion{background:rgba(255,215,0,.15);color:#D4A800;}
+.tier-hero-plus{background:rgba(255,182,193,.15);color:#E85B7F;}
+.tier-hero{background:rgba(128,0,128,.15);color:#9932CC;}
+.tier-vip-plus{background:rgba(0,150,255,.15);color:#0066CC;}
+.tier-vip{background:rgba(0,200,100,.15);color:#00A050;}
+.tier-none{background:rgba(160,160,160,.08);color:var(--tx3);}
+
+.form-grid{display:grid;gap:14px;}
+.g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:640px){.g2,.g3{grid-template-columns:1fr;}}
+.form-row{display:flex;flex-direction:column;}
+label{display:block;font-size:12px;color:var(--tx3);margin-bottom:5px;letter-spacing:.4px;}
+input[type=text],input[type=number],input[type=password],input[type=url],input[type=date],select,textarea{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-g);}
+select option{background:#fff;color:var(--tx);}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-p{background:linear-gradient(135deg,var(--orange),var(--orange-d));color:#fff;box-shadow:0 4px 14px rgba(232,80,10,.28);}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,80,10,.38);}
+.btn-b{background:linear-gradient(135deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 4px 14px rgba(20,120,204,.25);}
+.btn-b:hover{transform:translateY(-1px);}
+.btn-s{background:#fff;color:var(--tx);border:1px solid #D0D4DF;}
+.btn-s:hover{background:#F0F2F6;}
+.btn-r{background:linear-gradient(135deg,#1FA56A,#168A57);color:#fff;box-shadow:0 4px 14px rgba(31,165,106,.25);}
+.btn-r:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(31,165,106,.35);}
+.btn-d{background:rgba(200,40,40,.08);color:#C0281E;border:1px solid rgba(200,40,40,.18);}
+.btn-d:hover{background:rgba(200,40,40,.15);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.actions-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+.panel-toggle{border:1px solid rgba(20,120,204,.18);background:rgba(20,120,204,.08);color:var(--blue-d);padding:8px 14px;border-radius:10px;cursor:pointer;transition:all .2s;font-size:13px;}
+.panel-toggle:hover{background:rgba(20,120,204,.14);}
+.panel-hidden{display:none!important;}
+#member-import-file{display:block;width:100%;margin-top:8px;}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.4px;}
+.tg{background:rgba(232,80,10,.12);color:var(--orange-l);}
+.tw{background:rgba(20,120,204,.12);color:var(--blue-l);}
+.tp{background:rgba(200,160,0,.12);color:#A07800;}
+.ta{background:rgba(20,160,80,.12);color:#0E8A3A;}
+.tr_{background:rgba(200,40,40,.12);color:#C0281E;}
+
+#toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);padding:13px 18px;font-size:14px;min-width:200px;color:var(--tx);box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(16px);opacity:0;transition:all .3s;pointer-events:none;}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.success{border-color:rgba(20,160,80,.35);color:#0E8A3A;background:#F0FBF4;}
+#toast.error{border-color:rgba(200,40,40,.28);color:#C0281E;background:#FFF2F0;}
+#toast.info{border-color:var(--bdr2);color:var(--blue-d);background:#F0F7FF;}
+
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+
+.hero{text-align:center;padding:52px 20px 36px;}
+.hero-icon{width:76px;height:76px;border-radius:18px;margin:0 auto 22px;background:linear-gradient(135deg,var(--orange),var(--orange-d));display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#fff;box-shadow:0 0 36px rgba(232,80,10,.3);}
+.hero h2{font-size:38px;font-weight:900;letter-spacing:-1px;}
+.hero h2 em{font-style:normal;color:var(--orange);}
+.hero p{color:var(--tx2);margin-top:10px;font-size:15px;}
+.hero-btns{display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+.hero-btns .btn{min-width:170px;font-size:16px;padding:14px 24px;}
+
+.score-log-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(216,220,232,0.6);font-size:13px;color:var(--tx);}
+.score-log-item:last-child{border-bottom:none;}
+.score-log-detail{color:var(--tx3);}
+.member-row{margin:0 0 10px 0;padding:10px 12px;border:1px solid rgba(216,220,232,0.6);border-radius:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.member-row div{font-size:13px;}
+.member-row .member-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.member-row select{width:110px;padding:6px;border:1px solid var(--bdr3);border-radius:var(--r);font-size:13px;}
+.member-row input[type=number]{width:70px;padding:6px;border:1px solid var(--bdr3);border-radius:var(--r);font-size:13px;}
+.member-row button{padding:6px 10px;font-size:12px;}
+
+.ss-wrap{position:relative;}
+.ss-input{width:100%;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);color:var(--tx);font-family:var(--font);font-size:14px;padding:9px 13px;outline:none;transition:border-color .2s,box-shadow .2s;cursor:text;}
+.ss-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-g);}
+.ss-drop{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:300;background:#fff;border:1px solid var(--bdr3);border-radius:var(--r);overflow-y:auto;max-height:200px;box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.ss-drop.open{display:block;}
+.ss-opt{padding:9px 13px;font-size:14px;cursor:pointer;color:var(--tx);transition:background .1s;}
+.ss-opt:hover{background:#FDF5F1;color:var(--orange);}
+.ss-opt.nr{color:var(--tx3);cursor:default;font-size:13px;}
+.ss-opt.nr:hover{background:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo" onclick="navTo('home')">
+    <div class="logo-icon">A</div>
+    <div>
+      <div class="logo-title">Akuma Paradise</div>
+      <div class="logo-sub">Guild Management</div>
+    </div>
+  </a>
+  <nav>
+    <button id="n-home" onclick="navTo('home')" class="active">首頁</button>
+    <button id="n-leaderboard" onclick="navTo('leaderboard')">積分總表</button>
+    <button id="n-admin" onclick="navTo('admin')">管理後台</button>
+  </nav>
+</header>
+
+<main>
+  <div id="p-home" class="page active">
+    <div class="hero">
+      <div class="hero-icon">A</div>
+      <h2>Admin <em>Console</em></h2>
+      <p>管理端：審核申報、維護成員、調整獎勵</p>
+      <div class="hero-btns">
+        <button class="btn btn-p" onclick="navTo('leaderboard')">📊 積分總表</button>
+        <button class="btn btn-b" onclick="navTo('admin')">⚙️ 進入後台</button>
+      </div>
+    </div>
+    <div class="stats-grid" id="home-stats"></div>
+    <div class="card">
+      <div class="card-title">積分計算規則</div>
+      <div class="form-grid g3">
+        <div style="background:#FFF8F5;border:1px solid rgba(232,80,10,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:var(--orange);font-weight:700;font-size:14px;margin-bottom:7px;">⚔️ Graid</div>
+          <div style="font-size:22px;font-weight:900;">+2 <span style="font-size:12px;color:var(--tx3)">pts / 人次</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">每次 Graid 共 4 名玩家各得 2 分</div>
+        </div>
+        <div style="background:#F5F9FF;border:1px solid rgba(20,120,204,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:var(--blue);font-weight:700;font-size:14px;margin-bottom:7px;">🎯 Weekly Obj</div>
+          <div style="font-size:22px;font-weight:900;">+5 <span style="font-size:12px;color:var(--tx3)">pts 基本</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">月內 2 次 +7 額外；4 次 +15 額外</div>
+        </div>
+        <div style="background:#F5FFF7;border:1px solid rgba(20,160,80,.16);border-radius:var(--r);padding:16px;">
+          <div style="color:#0E8A3A;font-weight:700;font-size:14px;margin-bottom:7px;">⭐ Guild XP</div>
+          <div style="font-size:22px;font-weight:900;">+1 <span style="font-size:12px;color:var(--tx3)">pt / 20M XP</span></div>
+          <div style="font-size:12px;color:var(--tx3);margin-top:7px;">每月管理員匯入 XP 總表後自動換算</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="p-leaderboard" class="page">
+    <div class="page-header">
+      <h1>積分 <span>總表</span></h1>
+      <p>所有成員目前的積分排行</p>
+    </div>
+    <div class="card">
+      <div class="card-actions">
+        <div class="search-box">
+          <label for="lb-search">快速搜尋玩家</label>
+          <input id="lb-search" type="text" placeholder="輸入玩家名稱，按 Enter 跳轉" onkeydown="if(event.key==='Enter') findLeaderboard()">
+        </div>
+        <div id="lb-sort-hint" class="sort-hint">目前排序：職銜 正序</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th class="sortable" onclick="setLbSort('rank')">職銜 <span class="sort-arrow" id="sort-rank">⇅</span></th><th class="sortable" onclick="setLbSort('tier')">階級 <span class="sort-arrow" id="sort-tier">⇅</span></th><th class="sortable" onclick="setLbSort('name')">玩家名稱 <span class="sort-arrow" id="sort-name">⇅</span></th><th class="sortable" onclick="setLbSort('pts')">目前分數 <span class="sort-arrow" id="sort-pts">⇅</span></th><th class="sortable" onclick="setLbSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-joinDate">⇅</span></th></tr></thead>
+          <tbody id="lb-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">最近 10 筆分數紀錄</div>
+      <div id="score-log"></div>
+    </div>
+  </div>
+
+  <div id="p-report" class="page"></div>
+  <div id="p-redeem" class="page"></div>
+
+  <div id="p-admin" class="page" style="border:2px solid rgba(20,120,204,0.2);border-radius:16px;padding:20px;background:rgba(20,120,204,0.02);">
+    <div id="admin-login" class="card">
+      <div class="card-title">🔒 管理員驗證</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <p style="margin-bottom:0.75rem;color:var(--tx2);font-size:14px;line-height:1.6;">請使用 Firebase 管理員帳密登入後台。</p>
+        </div>
+        <div class="form-grid g2">
+          <div class="form-row">
+            <label>管理員 Email</label>
+            <input type="text" id="admin-email" placeholder="you@example.com" autocomplete="username">
+          </div>
+          <div class="form-row">
+            <label>管理員密碼</label>
+            <input type="password" id="admin-password" placeholder="輸入密碼" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="actions-row" style="flex-wrap:wrap;gap:10px;">
+          <button class="btn btn-s" onclick="adminLogin()">管理員登入</button>
+        </div>
+      </div>
+      <div id="admin-status" style="margin-top:12px;color:var(--tx3);font-size:13px;">請輸入管理員帳密登入</div>
+    </div>
+    <div id="admin-panel" style="display:none">
+      <div class="page-header">
+        <h1>⚙️ 管理後台</h1>
+        <p>管理成員、積分與獎勵系統</p>
+      </div>
+      <div class="actions-row" style="justify-content:flex-end;margin-bottom:14px;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-b btn-sm" onclick="window.open('https://console.firebase.google.com/project/akuma-paradise-db/overview','_blank')">Firebase 控制台</button>
+        <button class="btn btn-s btn-sm" onclick="adminLogout()">登出</button>
+      </div>
+      <div class="form-grid g2">
+        <div class="card">
+          <div class="card-title">📋 待審核申報</div>
+          <div id="a-replist"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📦 待處理兌換</div>
+          <div id="a-rdmlist"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 成員與職銜管理</div>
+        <div class="card" style="background:#F8F9FB;border:1px solid rgba(0,0,0,.05);margin-bottom:18px;padding:18px">
+          <div class="card-title" style="margin-bottom:14px;font-size:13px">新增成員表單</div>
+          <div class="form-grid g3">
+            <div class="form-row">
+              <label>玩家名稱</label>
+              <input type="text" id="new-m-name" placeholder="輸入玩家名稱">
+            </div>
+            <div class="form-row">
+              <label>職銜</label>
+              <select id="new-m-rank">
+                <option value="0">會長 (Owner)</option>
+                <option value="1">內院總管 (Chief+)</option>
+                <option value="2">執事 (Strategist)</option>
+                <option value="3">助理 (Captain+)</option>
+                <option value="4">領隊 (Captain)</option>
+                <option value="5">正式成員</option>
+                <option value="6" selected>成員</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>階級</label>
+              <select id="new-m-tier">
+                <option value="" selected>無階級</option>
+                <option value="Champion">Champion 🟨</option>
+                <option value="Hero+">Hero+ 🌸</option>
+                <option value="Hero">Hero 💜</option>
+                <option value="VIP+">VIP+ 🔵</option>
+                <option value="VIP">VIP 💚</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>入會日期</label>
+              <input type="date" id="new-m-date">
+            </div>
+            <div></div>
+            <div style="display:flex;align-items:flex-end">
+              <button class="btn btn-p" onclick="addM()" style="width:100%">+ 新增成員</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px;padding:18px;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;">
+            <span>👥 成員名單編輯</span>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;">
+              <button class="btn btn-s btn-sm" onclick="addEmptyMemberRow()">+ 新增空白列</button>
+              <button class="btn btn-p btn-sm" onclick="saveMemberTable()">💾 儲存清單</button>
+              <button id="member-edit-toggle" class="panel-toggle" onclick="toggleSection('member-edit-panel','member-edit-toggle','展開編輯區','收合編輯區')">展開編輯區</button>
+            </div>
+          </div>
+          <div id="member-edit-panel" class="panel-hidden">
+            <div id="member-sort-hint" style="margin-top:10px;font-size:13px;color:var(--tx3)">目前排序：職銜 正序</div>
+            <div class="table-wrap" style="overflow-x:auto;">
+              <table id="member-edit-table">
+                <thead>
+                  <tr>
+                    <th style="width:24px">#</th>
+                    <th class="sortable" onclick="setMemberSort('name')">玩家名稱 <span class="sort-arrow" id="sort-member-name">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('rank')">職銜 <span class="sort-arrow" id="sort-member-rank">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('tier')">階級 <span class="sort-arrow" id="sort-member-tier">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('joinDate')">入會日期 <span class="sort-arrow" id="sort-member-joinDate">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('pts')">總分 <span class="sort-arrow" id="sort-member-pts">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('xp')">XP pts <span class="sort-arrow" id="sort-member-xp">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('weekly')">Weekly pts <span class="sort-arrow" id="sort-member-weekly">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('graid')">Graid pts <span class="sort-arrow" id="sort-member-graid">⇅</span></th>
+                    <th class="sortable" onclick="setMemberSort('bonus')">Bonus pts <span class="sort-arrow" id="sort-member-bonus">⇅</span></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p style="margin-top:10px;font-size:13px;color:var(--tx3)">直接在表格中編輯欄位；完成後按右上角「儲存清單」。新增成員時可以先加空白列。</p>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px;padding:18px;">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;">
+            <span>📑 成員資料顯示</span>
+            <button id="member-list-toggle" class="panel-toggle" style="margin-left:auto;" onclick="toggleSection('member-list-panel','member-list-toggle','展開成員列表','收合成員列表')">展開成員列表</button>
+          </div>
+          <div id="member-list-panel" class="panel-hidden">
+            <div id="a-mlist"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px;padding:18px;">
+          <div class="card-title">📥 匯入成員資料（TXT）</div>
+          <div class="form-row">
+            <label>成員匯入檔案</label>
+            <input type="file" id="member-import-file" accept=".txt">
+          </div>
+          <p style="margin-top:8px;font-size:13px;color:var(--tx3)">每行格式：名稱,職銜,階級,入會日期,XP,Weekly,Graid,Bonus。職銜可填 0-6 或 會長/成員。日期例：2026-05-25。</p>
+          <div class="actions-row">
+            <button class="btn btn-s" onclick="downloadMemberImportTemplate()">下載匯入範例</button>
+            <button class="btn btn-b" onclick="importMemberTxt()">匯入成員資料</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ 匯入 Guild XP (20M = 1pt)</div>
+        <div class="form-row">
+          <label>XP 資料 (格式：名稱,XP值)</label>
+          <textarea id="xp-csv" rows="5" placeholder="Erwin,40000000&#10;Steven,20000000"></textarea>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-b" onclick="importXP()">批次增加積分</button>
+          <button class="btn btn-s" onclick="cleanupOldLogs()">清理舊 Log（省空間）</button>
+        </div>
+        <p style="margin-top:8px;font-size:13px;color:var(--tx3)">會保留最近 14 天且最多 300 筆紀錄。</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🛠️ 獎勵展示維護</div>
+        <div class="form-grid g3" style="margin-bottom:16px;">
+          <div class="form-row">
+            <label>獎勵名稱</label>
+            <input type="text" id="new-rw-name" placeholder="輸入獎勵名稱">
+          </div>
+          <div class="form-row">
+            <label>分數顯示</label>
+            <input type="number" id="new-rw-cost" placeholder="分數" min="0">
+          </div>
+          <div class="form-row">
+            <label>庫存</label>
+            <input type="number" id="new-rw-stock" placeholder="庫存" min="0">
+          </div>
+          <div class="form-row">
+            <label>展示類別</label>
+            <select id="new-rw-cat">
+              <option value="game">遊戲內展示</option>
+              <option value="outside">遊戲外展示</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>顯示位置</label>
+            <input type="number" id="new-rw-pos" placeholder="數字越小越前面" min="0" value="0">
+          </div>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-s" onclick="addRw()">+ 新增展示項目</button>
+        </div>
+        <div id="a-rwlist"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD39ppJKPiZktFafaOOXC61Fd-rAM70rAk",
+  authDomain: "akuma-paradise-db.firebaseapp.com",
+  projectId: "akuma-paradise-db",
+  databaseURL: "https://akuma-paradise-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: "akuma-paradise-db.firebasestorage.app",
+  messagingSenderId: "616381678361",
+  appId: "1:616381678361:web:c27afc23b5cada9756fb88"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const adminUid = 'REPLACE_WITH_YOUR_ADMIN_UID';
+const isBootstrapMode = adminUid === 'REPLACE_WITH_YOUR_ADMIN_UID';
+let adminSessionActive = false;
+
+// 核心資料連結
+const gM = () => window.m || [];
+const isAdminUser = () => adminSessionActive === true;
+const sM = (d) => {
+  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
+  return set(ref(db, 'members'), d);
+};
+const gRw = () => window.rw || [];
+const sRw = (d) => {
+  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
+  return set(ref(db, 'rewards'), d);
+};
+const gRp = () => window.rp || [];
+const sRp = (d) => {
+  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
+  return set(ref(db, 'reports'), d);
+};
+const createReport = async () => {};
+const normalizeReportList = (raw) => {
+  if(!raw) return [];
+  if(Array.isArray(raw)) return raw.filter(Boolean);
+  const list = [];
+  Object.entries(raw).forEach(([k, v]) => {
+    if(!v) return;
+    if(Array.isArray(v)){
+      v.filter(Boolean).forEach(item => list.push({ ...item, _path: `reports/${k}` }));
+      return;
+    }
+    if(typeof v === 'object' && v.players && v.type){
+      list.push({ ...v, _path: `reports/${k}` });
+      return;
+    }
+    if(typeof v === 'object'){
+      Object.entries(v).forEach(([subK, subV]) => {
+        if(subV && typeof subV === 'object' && subV.players && subV.type){
+          list.push({ ...subV, _path: `reports/${k}/${subK}` });
+        }
+      });
+    }
+  });
+  return list;
+};
+const gRd = () => window.rd || [];
+const sRd = (d) => {
+  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
+  return set(ref(db, 'redeems'), d);
+};
+const gL = () => window.logs || [];
+const sL = (d) => {
+  if(!isAdminUser()) return toast('需管理員登入才能修改資料','error');
+  return set(ref(db, 'logs'), d);
+};
+
+// 監聽雲端變動
+onValue(ref(db, 'members'), s => { 
+  window.m = s.val() || []; 
+  renderHome(); 
+  if(window.isA) renderAM();
+});
+onValue(ref(db, 'rewards'), s => { window.rw = s.val() || []; renderRedeem(); if(window.isA) renderARw(); });
+onValue(ref(db, 'reports'), s => { window.rp = normalizeReportList(s.val()); if(window.isA) renderARp(); });
+onValue(ref(db, 'redeems'), s => { window.rd = s.val() || []; if(window.isA) renderARd(); });
+onValue(ref(db, 'logs'), s => { window.logs = s.val() || []; renderLeaderboard(); });
+
+// 初始化
+window.isA = false;
+window.lbSort = { key:'rank', dir:'asc' };
+window.memberSort = { key:'rank', dir:'asc' };
+const lbSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'目前分數', joinDate:'入會日期' };
+const memberSortLabels = { rank:'職銜', tier:'階級', name:'玩家名稱', pts:'總積分', xp:'XP', weekly:'Weekly', graid:'Graid', bonus:'Bonus', joinDate:'入會日期' };
+const tierOrder = { Champion:0, 'Hero+':1, Hero:2, 'VIP+':3, VIP:4 };
+const pts = m => (m.ptsXP||0) + (m.ptsWeekly||0) + (m.ptsGraid||0) + (m.ptsBonus||0);
+const fmt = t => new Date(t).toLocaleString();
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const updateAdminUI = () => {
+  const loginCard = document.getElementById('admin-login');
+  const adminPanel = document.getElementById('admin-panel');
+  const status = document.getElementById('admin-status');
+  const isAdmin = adminSessionActive === true;
+  window.isA = isAdmin;
+  if(isAdmin){
+    if(loginCard) loginCard.style.display = 'none';
+    if(adminPanel) adminPanel.style.display = 'block';
+    if(status) status.innerHTML = '管理員已登入';
+    renderAM(); renderARp(); renderARd(); renderARw();
+  } else {
+    if(loginCard) loginCard.style.display = 'block';
+    if(adminPanel) adminPanel.style.display = 'none';
+    if(status) status.innerHTML = '請輸入管理員帳密登入';
+  }
+};
+updateAdminUI();
+onAuthStateChanged(auth, (user) => {
+  adminSessionActive = !!user && (isBootstrapMode || user.uid === adminUid);
+  updateAdminUI();
+  if(user && isBootstrapMode){
+    const status = document.getElementById('admin-status');
+    if(status) status.innerHTML = `初始化模式：你的 UID 是 <code>${esc(user.uid)}</code>，請貼回 adminUid 後重新整理。`;
+    toast('初始化模式：已顯示 UID，請複製後貼到 adminUid','info');
+  }
+});
+const compareLeaderboard = (a,b) => {
+  const key = window.lbSort.key;
+  let cmp = 0;
+  if(key==='rank'){
+    cmp = normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='tier'){
+    cmp = (tierOrder[getTierLabel(a.tier)]||99) - (tierOrder[getTierLabel(b.tier)]||99) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='name'){
+    cmp = a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='pts'){
+    cmp = pts(a) - pts(b) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='joinDate'){
+    cmp = (a.joinDate||0) - (b.joinDate||0) || a.name.localeCompare(b.name,'zh-TW');
+  }
+  return window.lbSort.dir === 'asc' ? cmp : -cmp;
+};
+const compareMembers = (a,b) => {
+  const key = window.memberSort.key;
+  let cmp = 0;
+  if(key==='rank'){
+    cmp = normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='tier'){
+    cmp = (tierOrder[getTierLabel(a.tier)]||99) - (tierOrder[getTierLabel(b.tier)]||99) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='name'){
+    cmp = a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='pts'){
+    cmp = pts(a) - pts(b) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='xp'){
+    cmp = (a.ptsXP||0) - (b.ptsXP||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='weekly'){
+    cmp = (a.ptsWeekly||0) - (b.ptsWeekly||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='graid'){
+    cmp = (a.ptsGraid||0) - (b.ptsGraid||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='bonus'){
+    cmp = (a.ptsBonus||0) - (b.ptsBonus||0) || a.name.localeCompare(b.name,'zh-TW');
+  } else if(key==='joinDate'){
+    cmp = (a.joinDate||0) - (b.joinDate||0) || a.name.localeCompare(b.name,'zh-TW');
+  }
+  return window.memberSort.dir === 'asc' ? cmp : -cmp;
+};
+const updateSortIndicators = () => {
+  ['rank','tier','name','pts','joinDate'].forEach(key => {
+    const el = document.getElementById(`sort-${key}`);
+    if(!el) return;
+    if(window.lbSort.key===key){
+      el.textContent = window.lbSort.dir==='asc' ? '▲' : '▼';
+      el.style.opacity = '1';
+    } else {
+      el.textContent = '⇅';
+      el.style.opacity = '0.4';
+    }
+  });
+  const hint = document.getElementById('lb-sort-hint');
+  if(hint) hint.textContent = `目前排序：${lbSortLabels[window.lbSort.key]} ${window.lbSort.dir==='asc'?'正序':'反序'}`;
+};
+const updateMemberSortIndicators = () => {
+  ['rank','tier','name','pts','xp','weekly','graid','bonus','joinDate'].forEach(key => {
+    const el = document.getElementById(`sort-member-${key}`);
+    if(!el) return;
+    if(window.memberSort.key===key){
+      el.textContent = window.memberSort.dir==='asc' ? '▲' : '▼';
+      el.style.opacity = '1';
+    } else {
+      el.textContent = '⇅';
+      el.style.opacity = '0.4';
+    }
+  });
+  const hint = document.getElementById('member-sort-hint');
+  if(hint) hint.textContent = `目前排序：${memberSortLabels[window.memberSort.key] || '排序'} ${window.memberSort.dir==='asc'?'正序':'反序'}`;
+};
+window.setLbSort = (key) => {
+  if(window.lbSort.key === key){
+    window.lbSort.dir = window.lbSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    window.lbSort.key = key;
+    window.lbSort.dir = key === 'pts' ? 'desc' : 'asc';
+  }
+  renderLeaderboard();
+};
+window.setMemberSort = (key) => {
+  if(window.memberSort.key === key){
+    window.memberSort.dir = window.memberSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    window.memberSort.key = key;
+    window.memberSort.dir = key === 'pts' ? 'desc' : 'asc';
+  }
+  renderMemberEditTable();
+};
+window.findLeaderboard = () => {
+  const query = document.getElementById('lb-search').value.trim().toLowerCase();
+  const rows = Array.from(document.querySelectorAll('#lb-body tr'));
+  rows.forEach(r => r.classList.remove('highlight'));
+  if(!query) return;
+  const found = rows.find(row => (row.dataset.name || '').includes(query));
+  if(found){
+    found.classList.add('highlight');
+    found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    toast('找不到該玩家','error');
+  }
+};
+const escAttr = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const LOG_RETENTION = 1000 * 60 * 60 * 24 * 30;
+const rankTitles = {0:'會長',1:'內院總管',2:'執事',3:'助理',4:'領隊',5:'正式成員',6:'成員'};
+const rankOrder = {
+  '會長':0,'內院總管':1,'執事':2,'助理':3,'領隊':4,'正式成員':5,'成員':6,
+  'Recruiter':5,'Recruit':6,'Owner':0,'Chief+':1,'Strategist':2,'Captain+':3,'Captain':4
+};
+const normalizeRank = (rank) => {
+  if(typeof rank === 'number') return rank;
+  if(typeof rank === 'string'){
+    const num = parseInt(rank,10);
+    if(!isNaN(num)) return num;
+    return rankOrder[rank.trim()] ?? 99;
+  }
+  return 99;
+};
+const tierLabels = ['Champion','Hero+','Hero','VIP+','VIP'];
+const getTierLabel = (tier) => {
+  if(typeof tier === 'number') return tierLabels[tier] || 'VIP';
+  if(tier === null || tier === undefined) return '無階級';
+  if(String(tier).trim() === '') return '無階級';
+  return tier;
+};
+const getTierClass = (tier) => {
+  const labelRaw = getTierLabel(tier);
+  if(labelRaw === '無階級') return 'tier-none';
+  const label = String(labelRaw).toLowerCase().replace('+','-').replace(/ /g,'-');
+  return `tier-${label}`;
+};
+const addLog = (playerName, amount, detail) => {
+  const logs = gL();
+  const now = Date.now();
+  logs.push({ id: now, playerName, amount, detail, ts: now });
+  const cutoff = now - LOG_RETENTION;
+  const trimmed = logs.filter(l => l.ts >= cutoff);
+  sL(trimmed);
+};
+function toast(m,t='info'){ 
+  const el=document.getElementById('toast'); el.innerText=m; el.className=''; el.classList.add(t);
+  el.style.display='block'; el.classList.add('show');
+  setTimeout(()=> { el.classList.remove('show'); setTimeout(()=>el.style.display='none',300); },3000);
+}
+
+// 導航
+window.navTo = function(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+id).classList.add('active');
+  document.getElementById('n-'+id).classList.add('active');
+}
+
+// 頁面渲染：首頁
+function renderHome(){
+  const list = [...gM()].sort((a,b)=>pts(b)-pts(a));
+  const totalMembers = list.length;
+  const totalPoints = list.reduce((sum, m) => sum + pts(m), 0);
+  const avgPoints = totalMembers > 0 ? (totalPoints / totalMembers).toFixed(1) : 0;
+
+  const statsEl = document.getElementById('home-stats');
+  statsEl.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value">${totalMembers}</div>
+      <div class="stat-label">總成員數</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${totalPoints.toFixed(1)}</div>
+      <div class="stat-label">總積分</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${avgPoints}</div>
+      <div class="stat-label">平均積分</div>
+    </div>
+  `;
+
+  // 同步 leaderboard
+  renderLeaderboard();
+}
+
+function renderLeaderboard(){
+  const list = [...gM()].sort(compareLeaderboard);
+  const tbody = document.getElementById('lb-body');
+  const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
+  
+  tbody.innerHTML = list.map((m,i)=>{ const rank = normalizeRank(m.rank); return `<tr data-name="${escAttr(m.name).toLowerCase()}"><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'成員'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
+    || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--tx3)">暫無成員資料</td></tr>';
+
+  updateSortIndicators();
+
+  const logEl = document.getElementById('score-log');
+  if(logEl){
+    const logs = [...gL()].filter(l=>l.ts >= Date.now() - LOG_RETENTION).sort((a,b)=>b.ts-a.ts).slice(0,10);
+    logEl.innerHTML = logs.length ? logs.map(l=>`<div style="margin-bottom:12px;padding:10px 0;border-bottom:1px solid rgba(216,220,232,0.6)"><div><b>${esc(l.playerName)}</b> +${parseFloat(l.amount).toFixed(1)} pts <span style="color:var(--tx3);">${esc(l.detail)}</span></div><div style="font-size:12px;color:var(--tx3);margin-top:4px">${new Date(l.ts).toLocaleString('zh-TW')}</div></div>`).join('') : '<div style="padding:18px;color:var(--tx3)">暫無最近紀錄</div>';
+  }
+}
+
+// 申報邏輯
+window.toggleGraid = () => document.getElementById('graid-inputs').style.display = document.getElementById('rep-type').value==='graid'?'block':'none';
+window.submitReport = async () => {
+  const name=document.getElementById('rep-name').value, type=document.getElementById('rep-type').value, link=document.getElementById('rep-link').value;
+  if(!name || !link) return toast('請填寫完整資訊','error');
+  const p = [name]; if(type==='graid') p.push(document.getElementById('rep-p2').value, document.getElementById('rep-p3').value, document.getElementById('rep-p4').value);
+  await createReport({ id:Date.now(), name, type, link, players:p.filter(x=>x), status:'pending', ts:Date.now() });
+  toast('申報已送出，請等待審核','success'); navTo('home');
+};
+
+// 自定義搜尋功能
+const setupSearchInput = (inputId, dropId, hiddenId) => {
+  const input = document.getElementById(inputId);
+  const drop = document.getElementById(dropId);
+  const hidden = document.getElementById(hiddenId);
+  
+  if(!input) return;
+  
+  input.addEventListener('input', () => {
+    const val = input.value.trim().toLowerCase();
+    const members = gM().map(m=>m.name);
+    const matches = val ? members.filter(n=>n.toLowerCase().includes(val)) : [];
+    
+    drop.innerHTML = matches.length 
+      ? matches.map(n=>`<div class="ss-opt" onclick="setSel('${inputId}','${hiddenId}','${n}')">${esc(n)}</div>`).join('')
+      : `<div class="ss-opt nr">找不到玩家</div>`;
+    
+    drop.classList.toggle('open', val.length > 0);
+  });
+  
+  input.addEventListener('focus', () => {
+    if(input.value.trim()) input.dispatchEvent(new Event('input'));
+  });
+};
+
+window.setSel = (inputId, hiddenId, name) => {
+  document.getElementById(inputId).value = name;
+  document.getElementById(hiddenId).value = name;
+  document.getElementById(inputId).parentElement.querySelector('.ss-drop').classList.remove('open');
+};
+
+window.submitGraid = async () => {};
+window.submitWeekly = async () => {};
+
+// 獎勵展示邏輯
+function renderRedeem(){
+  const el = document.getElementById('reward-list');
+  const rewards = [...gRw()].sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
+  const game = rewards.filter(r=> (r.category||'game')==='game');
+  const outside = rewards.filter(r=> (r.category||'game')==='outside');
+  const renderSection = (title, items, type) => `
+    <div class="reward-section">
+      <div class="reward-section-title ${type==='outside'?'reward-outside':''}">${title}</div>
+      <div class="reward-card-grid">
+        ${items.length ? items.map(r=>`<div class="reward-card"><div><div class="reward-card-title">${esc(r.name)}</div><div class="reward-card-meta"><span class="reward-card-price">${r.cost} pts</span><span class="reward-card-stock">庫存 ${r.stock}</span></div></div><div style="margin-top:18px;font-size:13px;color:var(--tx3);line-height:1.5;">僅供展示，線下兌換處理</div></div>`).join('') : `<div class="reward-card empty">暫無展示項目</div>`}
+      </div>
+    </div>`;
+  el.innerHTML = renderSection('遊戲內獎勵展示項目', game, 'game') + renderSection('遊戲外獎勵展示項目', outside, 'outside');
+}
+window.applyRedeem = () => {
+  toast('此頁僅作展示，實際兌換請線下處理','info');
+};
+
+// 管理員功能
+window.adminLogin = async () => {
+  try {
+    const email = document.getElementById('admin-email')?.value.trim();
+    const password = document.getElementById('admin-password')?.value || '';
+    if(!email || !password) return toast('請輸入管理員 Email 與密碼','error');
+    await signInWithEmailAndPassword(auth, email, password);
+    if(document.getElementById('admin-password')) document.getElementById('admin-password').value = '';
+  } catch(err) {
+    console.error(err);
+    toast('管理員登入失敗','error');
+  }
+};
+
+window.adminLogout = () => {
+  signOut(auth).then(()=>{
+    adminSessionActive = false;
+    updateAdminUI();
+    toast('已登出','success');
+  }).catch(()=>toast('登出失敗','error'));
+};
+
+function renderAM(){
+  const el=document.getElementById('a-mlist');
+  el.innerHTML = gM().slice().sort((a,b)=> normalizeRank(a.rank) - normalizeRank(b.rank) || a.name.localeCompare(b.name)).map(m=>{ const rank = normalizeRank(m.rank); return `<div class="card" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><b>${esc(m.name)}</b> (${rankTitles[rank]||'成員'}) - <span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="number" value="${pts(m).toFixed(1)}" id="pts-${m.name}" style="width:60px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:var(--r);"><select id="rank-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="0" ${normalizeRank(m.rank)===0?'selected':''}>會長</option><option value="1" ${normalizeRank(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${normalizeRank(m.rank)===2?'selected':''}>執事</option><option value="3" ${normalizeRank(m.rank)===3?'selected':''}>助理</option><option value="4" ${normalizeRank(m.rank)===4?'selected':''}>領隊</option><option value="5" ${normalizeRank(m.rank)===5?'selected':''}>正式成員</option><option value="6" ${normalizeRank(m.rank)===6?'selected':''}>成員</option></select><select id="tier-${m.name}" style="width:120px;padding:4px;border:1px solid var(--bdr3);border-radius:var(--r);"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select><button class="btn btn-s btn-sm" onclick="updateMember('${m.name}')">更新</button><button class="btn btn-d btn-sm" onclick="delM('${m.name}')">刪除</button></div></div>` }).join('');
+  renderMemberEditTable();
+}
+window.addM = () => { 
+  const n=document.getElementById('new-m-name').value; 
+  const r=parseInt(document.getElementById('new-m-rank').value)||6;
+  const t=document.getElementById('new-m-tier').value;
+  const d=document.getElementById('new-m-date').value;
+  
+  if(!n) return toast('請輸入玩家名稱','error');
+  if(!d) return toast('請選擇入會日期','error');
+  
+  const m=gM(); 
+  m.push({
+    id:Date.now(),
+    name:n,
+    ptsXP:0,
+    ptsWeekly:0,
+    ptsGraid:0,
+    ptsBonus:0,
+    wCount:0,
+    rank:r,
+    tier:t,
+    joinDate:new Date(d).getTime()
+  }); 
+  sM(m); 
+  document.getElementById('new-m-name').value=''; 
+  document.getElementById('new-m-rank').value='6';
+  document.getElementById('new-m-tier').value='VIP';
+  document.getElementById('new-m-date').value='';
+  toast('成員已新增','success');
+};
+window.updateMember = (name) => {
+  const m = gM().find(x=>x.name===name); if(!m) return;
+  const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
+  const newRank = parseInt(document.getElementById('rank-'+name).value)||4;
+  const newTier = document.getElementById('tier-'+name).value;
+  const oldTotal = pts(m);
+  // 將總分數設為Weekly，其餘歸零
+  m.ptsXP = 0;
+  m.ptsWeekly = newPts;
+  m.ptsGraid = 0;
+  m.ptsBonus = 0;
+  m.rank = newRank;
+  m.tier = newTier;
+  sM(gM());
+  if(newPts > oldTotal) addLog(m.name, newPts - oldTotal, '管理員調整分數');
+  toast('成員資訊已更新','success');
+};
+window.delM = (n) => { if(confirm('確定刪除？')){ const m=gM().filter(x=>x.name!==n); sM(m); } };
+
+function renderMemberEditTable(){
+  const tbody = document.querySelector('#member-edit-table tbody');
+  const members = gM().slice().sort(compareMembers);
+  tbody.innerHTML = members.map((m,i)=>{
+    return `<tr data-id="${m.id||''}">
+      <td>${i+1}</td>
+      <td><input type="text" value="${escAttr(m.name)}" class="member-name"></td>
+      <td><select class="member-rank"><option value="0" ${parseInt(m.rank)===0?'selected':''}>會長</option><option value="1" ${parseInt(m.rank)===1?'selected':''}>內院總管</option><option value="2" ${parseInt(m.rank)===2?'selected':''}>執事</option><option value="3" ${parseInt(m.rank)===3?'selected':''}>助理</option><option value="4" ${parseInt(m.rank)===4?'selected':''}>領隊</option><option value="5" ${parseInt(m.rank)===5?'selected':''}>正式成員</option><option value="6" ${parseInt(m.rank)===6?'selected':''}>成員</option></select></td>
+      <td><select class="member-tier"><option value="" ${getTierLabel(m.tier)==='無階級'?'selected':''}>無階級</option><option value="Champion" ${getTierLabel(m.tier)==='Champion'?'selected':''}>Champion</option><option value="Hero+" ${getTierLabel(m.tier)==='Hero+'?'selected':''}>Hero+</option><option value="Hero" ${getTierLabel(m.tier)==='Hero'?'selected':''}>Hero</option><option value="VIP+" ${getTierLabel(m.tier)==='VIP+'?'selected':''}>VIP+</option><option value="VIP" ${getTierLabel(m.tier)==='VIP'?'selected':''}>VIP</option></select></td>
+      <td><input type="date" value="${m.joinDate?new Date(m.joinDate).toISOString().slice(0,10):''}" class="member-date"></td>
+      <td>${pts(m).toFixed(1)}</td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsXP||0).toFixed(1)}" class="member-ptsXP"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsWeekly||0).toFixed(1)}" class="member-ptsWeekly"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsGraid||0).toFixed(1)}" class="member-ptsGraid"></td>
+      <td><input type="number" min="0" step="0.1" value="${parseFloat(m.ptsBonus||0).toFixed(1)}" class="member-ptsBonus"></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--tx3)">目前尚無成員資料，請新增成員或加入空白列</td></tr>';
+  updateMemberSortIndicators();
+}
+
+window.addEmptyMemberRow = () => {
+  const tbody = document.querySelector('#member-edit-table tbody');
+  const rowCount = tbody.querySelectorAll('tr').length + 1;
+  const blank = `<tr data-id="">
+    <td>${rowCount}</td>
+    <td><input type="text" value="" class="member-name" placeholder="玩家名稱"></td>
+    <td><select class="member-rank"><option value="0">會長</option><option value="1">內院總管</option><option value="2">執事</option><option value="3">助理</option><option value="4">領隊</option><option value="5">正式成員</option><option value="6" selected>成員</option></select></td>
+    <td><select class="member-tier"><option value="" selected>無階級</option><option value="Champion">Champion</option><option value="Hero+">Hero+</option><option value="Hero">Hero</option><option value="VIP+">VIP+</option><option value="VIP">VIP</option></select></td>
+    <td><input type="date" value="" class="member-date"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsXP"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsWeekly"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsGraid"></td>
+    <td><input type="number" min="0" step="0.1" value="0" class="member-ptsBonus"></td>
+  </tr>`;
+  tbody.insertAdjacentHTML('beforeend', blank);
+};
+
+window.toggleSection = (panelId, btnId, openLabel, closeLabel) => {
+  const panel = document.getElementById(panelId);
+  const button = document.getElementById(btnId);
+  if(!panel || !button) return;
+  const hidden = panel.classList.toggle('panel-hidden');
+  button.textContent = hidden ? openLabel : closeLabel;
+};
+
+window.importMemberTxt = async () => {
+  const fileInput = document.getElementById('member-import-file');
+  if(!fileInput || !fileInput.files || fileInput.files.length === 0) return toast('請先選擇 TXT 匯入檔案','error');
+  const file = fileInput.files[0];
+  const raw = await file.text();
+  const result = parseMemberImportText(raw);
+  if(result.added === 0 && result.updated === 0) {
+    return toast('沒有可匯入的成員資料','error');
+  }
+  sM(result.members);
+  toast(`匯入完成：新增 ${result.added} 筆，更新 ${result.updated} 筆`,'success');
+  fileInput.value = '';
+  renderMemberEditTable();
+  renderAM();
+};
+
+window.downloadMemberImportTemplate = () => {
+  const sample = [
+    'Erwin,6,VIP,2026-05-25,0,120,30,10',
+    'Steven,5,Hero+,2026-03-15,0,90,18,5',
+    'Amber,4,,2026-01-10,0,55,12,3'
+  ].join('\n');
+  const blob = new Blob([sample], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'member-import-template.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const parseMemberImportText = (raw) => {
+  const lines = raw.split(/\r?\n/);
+  const members = gM();
+  let added = 0;
+  let updated = 0;
+
+  for(const line of lines){
+    const row = line.trim();
+    if(!row || row.startsWith('#')) continue;
+    const parts = row.split(',').map(p=>p.trim());
+    const name = parts[0];
+    if(!name) continue;
+    const rankRaw = parts[1] || '';
+    const tier = parts[2] || '';
+    const joinDateRaw = parts[3] || '';
+    const ptsXP = parseFloat(parts[4] || '0') || 0;
+    const ptsWeekly = parseFloat(parts[5] || '0') || 0;
+    const ptsGraid = parseFloat(parts[6] || '0') || 0;
+    const ptsBonus = parseFloat(parts[7] || '0') || 0;
+
+    let joinDate = Date.parse(joinDateRaw);
+    if(isNaN(joinDate) || !joinDateRaw) {
+      const date = new Date(joinDateRaw);
+      joinDate = isNaN(date.getTime()) ? null : date.getTime();
+    }
+    if(!joinDate) {
+      continue;
+    }
+
+    const existing = members.find(m => m.name === name);
+    const rank = normalizeRank(rankRaw || '6');
+    const memberData = {
+      id: existing?.id || Date.now() + Math.floor(Math.random() * 1000),
+      name,
+      rank,
+      tier,
+      joinDate,
+      ptsXP,
+      ptsWeekly,
+      ptsGraid,
+      ptsBonus,
+      wCount: existing?.wCount || 0
+    };
+
+    if(existing){
+      Object.assign(existing, memberData);
+      updated += 1;
+    } else {
+      members.push(memberData);
+      added += 1;
+    }
+  }
+
+  return { members, added, updated };
+};
+
+window.saveMemberTable = () => {
+  const rows = Array.from(document.querySelectorAll('#member-edit-table tbody tr'));
+  const updated = [];
+  const current = gM();
+  for(const row of rows){
+    const name = row.querySelector('.member-name')?.value.trim();
+    const rank = parseInt(row.querySelector('.member-rank')?.value, 10);
+    const tier = row.querySelector('.member-tier')?.value;
+    const dateVal = row.querySelector('.member-date')?.value;
+    const ptsXP = parseFloat(row.querySelector('.member-ptsXP')?.value) || 0;
+    const ptsWeekly = parseFloat(row.querySelector('.member-ptsWeekly')?.value) || 0;
+    const ptsGraid = parseFloat(row.querySelector('.member-ptsGraid')?.value) || 0;
+    const ptsBonus = parseFloat(row.querySelector('.member-ptsBonus')?.value) || 0;
+    if(!name) continue;
+    if(!dateVal) return toast('請為所有成員填寫入會日期','error');
+    const existing = current.find(x => x.id == row.dataset.id || x.name === name) || {};
+    updated.push({
+      id: row.dataset.id || existing.id || Date.now() + Math.floor(Math.random()*1000),
+      name,
+      rank: isNaN(rank) ? 6 : rank,
+      tier: tier,
+      joinDate: new Date(dateVal).getTime(),
+      ptsXP,
+      ptsWeekly,
+      ptsGraid,
+      ptsBonus,
+      wCount: existing.wCount || 0
+    });
+  }
+  if(updated.length === 0){
+    return toast('表格中尚未填寫任何有效成員','error');
+  }
+  sM(updated);
+  toast('成員清單已儲存','success');
+  renderMemberEditTable();
+};
+
+window.renderMemberEditTable = renderMemberEditTable;
+
+window.importXP = () => {
+  const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
+  lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx){ const added = parseFloat(v)/20000000; if(!isNaN(added) && added>0){ tx.ptsXP=(tx.ptsXP||0)+added; addLog(tx.name, added, 'Guild XP 匯入'); } }});
+  sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
+};
+window.cleanupOldLogs = () => {
+  if(!isAdminUser()) return toast('需管理員登入才能清理','error');
+  const now = Date.now();
+  const cutoff = now - (1000 * 60 * 60 * 24 * 14); // keep 14 days
+  const allLogs = [...gL()];
+  const pruned = allLogs
+    .filter(l => l && (l.ts || 0) >= cutoff)
+    .sort((a,b)=>(b.ts||0)-(a.ts||0))
+    .slice(0,300);
+  sL(pruned);
+  toast(`清理完成：${allLogs.length} → ${pruned.length} 筆`,'success');
+};
+
+function renderARp(){
+  const rp=gRp().filter(x=>x.status==='pending'), el=document.getElementById('a-replist');
+  window.pendingReports = rp;
+  el.innerHTML = rp.map((r,idx)=>`<div class="card" style="margin:0"><div><b>${r.type==='graid'?'⚔️ Graid':'🎯 Weekly'}</b> - ${r.players.join(', ')}</div><div style="font-size:0.8rem;color:var(--tx3);margin:8px 0"><a href="${r.link}" target="_blank">查看截圖</a></div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="appRepAt(${idx})">核准</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無申報</div>';
+}
+window.appRepAt = async (idx) => {
+  const r = (window.pendingReports || [])[idx];
+  if(!r) return toast('找不到該申報','error');
+  const m=gM();
+  const allReports = gRp();
+  r.players.forEach(pname=>{
+    const tx=m.find(x=>x.name===pname); if(!tx) return;
+    if(r.type==='graid'){
+      tx.ptsGraid=(tx.ptsGraid||0)+2;
+      addLog(tx.name, 2, 'Graid 核准');
+    } else {
+      let added = 5;
+      tx.ptsWeekly=(tx.ptsWeekly||0)+5;
+      tx.wCount=(tx.wCount||0)+1;
+      if(tx.wCount===2){ tx.ptsWeekly=(tx.ptsWeekly||0)+7; added += 7; }
+      if(tx.wCount===4){ tx.ptsWeekly=(tx.ptsWeekly||0)+15; added += 15; }
+      addLog(tx.name, added, 'Weekly Obj 核准');
+    }
+  });
+  if(r._path){
+    await set(ref(db, `${r._path}/status`), 'approved');
+  } else {
+    const target = allReports.find(x => x.id === r.id);
+    if(target) target.status = 'approved';
+    sRp(allReports);
+  }
+  sM(m);
+  toast('核准成功','success');
+};
+
+function renderARd(){
+  const rd=gRd().filter(x=>x.status==='pending'), el=document.getElementById('a-rdmlist');
+  el.innerHTML = rd.map(r=>`<div class="card" style="margin:0"><div>${r.playerName} → ${r.rewardName} (${r.cost} pts)</div><div style="margin-top:12px"><button class="btn btn-p btn-sm" onclick="deductAndApproveRedeem(${r.id})">扣分並核准</button><button class="btn btn-s btn-sm" onclick="rejectRedeem(${r.id})">拒絕</button></div></div>`).join('') || '<div style="text-align:center;padding:24px;color:var(--tx3)">暫無兌換申請</div>';
+}
+window.deductAndApproveRedeem = (id) => {
+  const rds=gRd(), r=rds.find(x=>x.id===id), m=gM(), mx=m.find(x=>x.name===r.playerName), rws=gRw(), rw=rws.find(x=>x.id===r.rewardId);
+  if(!mx) return toast('找不到該成員','error');
+  let d=r.cost; ['ptsWeekly','ptsXP','ptsGraid'].forEach(f=>{ const t=Math.min(mx[f]||0,d); mx[f]-=t; d-=t; });
+  if(rw) rw.stock--; r.status='approved'; sRd(rds); sM(m); sRw(rws); toast('已扣分並核准','success');
+};
+window.rejectRedeem = (id) => {
+  if(!confirm('確定拒絕此兌換申請？')) return;
+  const rds=gRd(), r=rds.find(x=>x.id===id);
+  r.status='rejected'; sRd(rds); toast('已拒絕申請','success');
+};
+
+function renderARw(){
+  const rewards = [...gRw()].sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
+  const game = rewards.filter(r=> (r.category||'game')==='game');
+  const outside = rewards.filter(r=> (r.category||'game')==='outside');
+  const renderGroup = (title, items) => `
+    <div style="margin-bottom:18px">
+      <div class="card-title">${title}</div>
+      ${items.length ? items.map(r=>`<div class="card reward-admin-card" draggable="true" data-id="${r.id}" data-category="${r.category}" style="margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap" ondragstart="onRewardDragStart(event, ${r.id})" ondragover="onRewardDragOver(event)" ondragenter="onRewardDragEnter(event)" ondragleave="onRewardDragLeave(event)" ondrop="onRewardDrop(event, ${r.id})"><div class="reward-card-handle">☰</div><div style="flex:1"><b>${esc(r.name)}</b> (${r.cost} pts) - 庫存:${r.stock}</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="font-size:12px;color:var(--tx3);">位置 <input type="number" value="${parseInt(r.position)||0}" onchange="updateRwPosition(${r.id}, this.value)" style="width:64px;padding:4px 8px;border:1px solid var(--bdr3);border-radius:8px;"></label><span style="font-size:12px;color:var(--tx3);">${r.category==='outside'?'遊戲外':'遊戲內'}</span><button class="btn btn-d btn-sm" onclick="delRw(${r.id})">刪</button></div></div>`).join('') : `<div class="card" style="margin:0;padding:18px;color:var(--tx3)">暫無項目</div>`}
+    </div>`;
+  document.getElementById('a-rwlist').innerHTML = renderGroup('遊戲內獎勵展示項目', game) + renderGroup('遊戲外獎勵展示項目', outside);
+}
+window.addRw = () => {
+  const name = document.getElementById('new-rw-name').value.trim();
+  const cost = parseInt(document.getElementById('new-rw-cost').value, 10);
+  const stock = parseInt(document.getElementById('new-rw-stock').value, 10);
+  const category = document.getElementById('new-rw-cat').value;
+  const position = parseInt(document.getElementById('new-rw-pos').value, 10);
+  if(!name) return toast('請填寫獎勵名稱','error');
+  if(isNaN(cost) || cost < 0) return toast('請填寫正確分數','error');
+  if(isNaN(stock) || stock < 0) return toast('請填寫正確庫存','error');
+  if(isNaN(position) || position < 0) return toast('請填寫正確顯示位置','error');
+  const r = gRw();
+  r.push({id:Date.now(),name,cost,stock,category,position});
+  sRw(r);
+  document.getElementById('new-rw-name').value = '';
+  document.getElementById('new-rw-cost').value = '';
+  document.getElementById('new-rw-stock').value = '';
+  document.getElementById('new-rw-cat').value = 'game';
+  document.getElementById('new-rw-pos').value = '0';
+  toast('展示項目已新增','success');
+};
+window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
+window.updateRwPosition = (id, value) => {
+  const rewards = gRw();
+  const item = rewards.find(r => r.id === id);
+  if(!item) return;
+  const pos = parseInt(value, 10);
+  item.position = isNaN(pos) ? 0 : pos;
+  sRw(rewards);
+};
+
+window.onRewardDragStart = (event, id) => {
+  event.dataTransfer.setData('text/plain', id);
+  event.dataTransfer.effectAllowed = 'move';
+  document.querySelectorAll('.reward-admin-card').forEach(el => el.classList.remove('dragging'));
+  const dragged = event.currentTarget;
+  dragged.classList.add('dragging');
+};
+window.onRewardDragOver = (event) => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+};
+window.onRewardDragEnter = (event) => {
+  if(event.currentTarget !== event.target) return;
+  event.currentTarget.classList.add('drag-over');
+};
+window.onRewardDragLeave = (event) => {
+  if(event.currentTarget !== event.target) return;
+  event.currentTarget.classList.remove('drag-over');
+};
+window.onRewardDrop = (event, targetId) => {
+  event.preventDefault();
+  const sourceId = parseInt(event.dataTransfer.getData('text/plain'), 10);
+  const target = document.querySelector(`.reward-admin-card[data-id="${targetId}"]`);
+  if(!target || sourceId === targetId) return;
+  const rewards = [...gRw()];
+  const sourceItem = rewards.find(r => r.id === sourceId);
+  const targetItem = rewards.find(r => r.id === targetId);
+  if(!sourceItem || !targetItem || sourceItem.category !== targetItem.category) return;
+  const group = rewards.filter(r => r.category === sourceItem.category).sort((a,b)=> (parseInt(a.position)||999) - (parseInt(b.position)||999));
+  const sourceIndex = group.findIndex(r => r.id === sourceId);
+  const targetIndex = group.findIndex(r => r.id === targetId);
+  if(sourceIndex < 0 || targetIndex < 0) return;
+  group.splice(sourceIndex, 1);
+  group.splice(targetIndex, 0, sourceItem);
+  group.forEach((item, index) => { item.position = index; });
+  const others = rewards.filter(r => r.category !== sourceItem.category);
+  sRw([...others, ...group]);
+  document.querySelectorAll('.reward-admin-card').forEach(el => el.classList.remove('dragging','drag-over'));
+};
+
+</script>
+</body>
+</html>
