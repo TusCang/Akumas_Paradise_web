@@ -905,8 +905,13 @@ window.importMemberTxt = async () => {
   if(result.added === 0 && result.updated === 0) {
     return toast('沒有可匯入的成員資料','error');
   }
-  sM(result.members);
-  toast(`匯入完成：新增 ${result.added} 筆，更新 ${result.updated} 筆`,'success');
+  try {
+    await sM(result.members);
+    toast(`匯入完成：新增 ${result.added} 筆，更新 ${result.updated} 筆`,'success');
+  } catch (err) {
+    console.error(err);
+    return toast('匯入失敗，請檢查 Firebase 規則','error');
+  }
   fileInput.value = '';
   renderMemberEditTable();
   renderAM();
@@ -1026,10 +1031,17 @@ window.saveMemberTable = async () => {
 
 window.renderMemberEditTable = renderMemberEditTable;
 
-window.importXP = () => {
+window.importXP = async () => {
   const raw=document.getElementById('xp-csv').value, lines=raw.split('\n'), m=gM();
   lines.forEach(l=>{ const [n,v]=l.split(','); const tx=m.find(x=>x.name===n.trim()); if(tx){ const added = parseFloat(v)/20000000; if(!isNaN(added) && added>0){ tx.ptsXP=(tx.ptsXP||0)+added; addLog(tx.name, added, 'Guild XP 匯入'); } }});
-  sM(m); toast('XP 匯入完成','success'); document.getElementById('xp-csv').value='';
+  try {
+    await sM(m);
+    toast('XP 匯入完成','success');
+    document.getElementById('xp-csv').value='';
+  } catch (err) {
+    console.error(err);
+    toast('XP 匯入失敗，請檢查 Firebase 規則','error');
+  }
 };
 window.cleanupOldLogs = () => {
   if(!isAdminUser()) return toast('需管理員登入才能清理','error');
@@ -1052,6 +1064,7 @@ function renderARp(){
 }
 const approveReport = async (r) => {
   if(!r) return toast('找不到該申報','error');
+  toast('正在核准申報...','info');
   const m=gM();
   const allReports = gRp();
   r.players.forEach(pname=>{
@@ -1071,17 +1084,27 @@ const approveReport = async (r) => {
   try {
     if(r._path){
       const { _path, ...payload } = r;
-      await set(ref(db, _path), { ...payload, status:'approved' });
+      await Promise.race([
+        set(ref(db, _path), { ...payload, status:'approved' }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
     } else {
       const target = allReports.find(x => x.id === r.id);
       if(target) target.status = 'approved';
-      await sRp(allReports);
+      await Promise.race([
+        sRp(allReports),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
     }
-    await sM(m);
+    await Promise.race([
+      sM(m),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+    ]);
     toast('核准成功','success');
   } catch (err) {
     console.error(err);
-    toast('核准失敗，請檢查 Firebase 權限/資料格式','error');
+    const msg = err?.message === 'timeout' ? '核准逾時，請檢查網路或 Firebase 規則' : `核准失敗：${err?.message || '未知錯誤'}`;
+    toast(msg,'error');
   }
 };
 window.appRepAt = async (idx) => {
@@ -1090,20 +1113,28 @@ window.appRepAt = async (idx) => {
 };
 const rejectReport = async (r) => {
   if(!r) return toast('找不到該申報','error');
+  toast('正在拒絕申報...','info');
   try {
     if(r._path){
       const { _path, ...payload } = r;
-      await set(ref(db, _path), { ...payload, status:'rejected' });
+      await Promise.race([
+        set(ref(db, _path), { ...payload, status:'rejected' }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
     } else {
       const allReports = gRp();
       const target = allReports.find(x => x.id === r.id);
       if(target) target.status = 'rejected';
-      await sRp(allReports);
+      await Promise.race([
+        sRp(allReports),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
     }
     toast('已拒絕申報','info');
   } catch (err) {
     console.error(err);
-    toast('拒絕失敗，請檢查 Firebase 權限/資料格式','error');
+    const msg = err?.message === 'timeout' ? '拒絕逾時，請檢查網路或 Firebase 規則' : `拒絕失敗：${err?.message || '未知錯誤'}`;
+    toast(msg,'error');
   }
 };
 window.rejectRepAt = async (idx) => {
@@ -1161,14 +1192,28 @@ window.addRw = async () => {
   document.getElementById('new-rw-pos').value = '0';
   toast('展示項目已新增','success');
 };
-window.delRw = (id) => { const r=gRw().filter(x=>x.id!==id); sRw(r); };
-window.updateRwPosition = (id, value) => {
+window.delRw = async (id) => {
+  const r=gRw().filter(x=>x.id!==id);
+  try {
+    await sRw(r);
+    toast('已刪除展示項目','success');
+  } catch (err) {
+    console.error(err);
+    toast('刪除失敗，請檢查 Firebase 規則','error');
+  }
+};
+window.updateRwPosition = async (id, value) => {
   const rewards = gRw();
   const item = rewards.find(r => r.id === id);
   if(!item) return;
   const pos = parseInt(value, 10);
   item.position = isNaN(pos) ? 0 : pos;
-  sRw(rewards);
+  try {
+    await sRw(rewards);
+  } catch (err) {
+    console.error(err);
+    toast('更新位置失敗，請檢查 Firebase 規則','error');
+  }
 };
 
 window.onRewardDragStart = (event, id) => {
@@ -1190,7 +1235,7 @@ window.onRewardDragLeave = (event) => {
   if(event.currentTarget !== event.target) return;
   event.currentTarget.classList.remove('drag-over');
 };
-window.onRewardDrop = (event, targetId) => {
+window.onRewardDrop = async (event, targetId) => {
   event.preventDefault();
   const sourceId = parseInt(event.dataTransfer.getData('text/plain'), 10);
   const target = document.querySelector(`.reward-admin-card[data-id="${targetId}"]`);
@@ -1207,7 +1252,12 @@ window.onRewardDrop = (event, targetId) => {
   group.splice(targetIndex, 0, sourceItem);
   group.forEach((item, index) => { item.position = index; });
   const others = rewards.filter(r => r.category !== sourceItem.category);
-  sRw([...others, ...group]);
+  try {
+    await sRw([...others, ...group]);
+  } catch (err) {
+    console.error(err);
+    toast('拖曳排序失敗，請檢查 Firebase 規則','error');
+  }
   document.querySelectorAll('.reward-admin-card').forEach(el => el.classList.remove('dragging','drag-over'));
 };
 
