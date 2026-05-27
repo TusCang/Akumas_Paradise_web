@@ -382,6 +382,28 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 let adminSessionActive = true;
 const adminPasscodeHash = '803f72d45a0edfe92ba8eb29f88be8e0545c39145ab750b369d7d8d5d84a5c40';
+const adminPasscodeHashFallback = '51500dc08a6aa194db3aac54dbbaaf5400000000000000000000000000000000';
+const fallbackHash = (text) => {
+  // Fallback hash for non-secure contexts where crypto.subtle is unavailable.
+  let h1 = 0xdeadbeef ^ text.length;
+  let h2 = 0x41c6ce57 ^ text.length;
+  for (let i = 0, ch; i < text.length; i++) {
+    ch = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const toHex = (n) => (n >>> 0).toString(16).padStart(8, '0');
+  return (toHex(h2) + toHex(h1) + toHex(h2 ^ h1) + toHex((h1 + h2) >>> 0)).padEnd(64, '0');
+};
+const hashPasscode = async (passcode) => {
+  if (window.crypto && window.crypto.subtle) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passcode));
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  return fallbackHash(passcode);
+};
 
 // 核心資料連結
 const gM = () => window.m || [];
@@ -745,10 +767,8 @@ window.adminLogin = async () => {
     const passInput = document.getElementById('admin-passcode');
     const passcode = (passInput?.value || '').trim();
     if(!passcode) return toast('請先輸入密碼','error');
-    if(!window.crypto || !window.crypto.subtle) return toast('瀏覽器不支援安全驗證，請換 Chrome/Edge/Safari','error');
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(passcode));
-    const hashHex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
-    if(hashHex !== adminPasscodeHash) return toast('密碼錯誤','error');
+    const hashHex = await hashPasscode(passcode);
+    if(hashHex !== adminPasscodeHash && hashHex !== adminPasscodeHashFallback) return toast('密碼錯誤','error');
     sessionStorage.setItem('adminUnlocked','1');
     if(passInput) passInput.value = '';
     updateAdminUI();
