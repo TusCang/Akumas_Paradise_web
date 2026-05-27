@@ -639,6 +639,10 @@ function renderHome(){
   const avgPoints = totalMembers > 0 ? (totalPoints / totalMembers).toFixed(1) : 0;
 
   const statsEl = document.getElementById('home-stats');
+  if(!statsEl){
+    renderLeaderboard();
+    return;
+  }
   statsEl.innerHTML = `
     <div class="stat-card">
       <div class="stat-value">${totalMembers}</div>
@@ -661,6 +665,7 @@ function renderHome(){
 function renderLeaderboard(){
   const list = [...gM()].sort(compareLeaderboard);
   const tbody = document.getElementById('lb-body');
+  if(!tbody) return;
   const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '未設定';
   
   tbody.innerHTML = list.map((m,i)=>{ const rank = normalizeRank(m.rank); return `<tr data-name="${escAttr(m.name).toLowerCase()}"><td><div class="rb r${i<3?i+1:'n'}">${i+1}</div></td><td>${rankTitles[rank]||'成員'}</td><td><span class="tier-badge ${getTierClass(m.tier)}">${getTierLabel(m.tier)}</span></td><td><b>${esc(m.name)}</b></td><td><span class="pts-pill">${pts(m).toFixed(1)}</span></td><td>${formatDate(m.joinDate)}</td></tr>` }).join('')
