@@ -824,7 +824,6 @@ window.addM = async () => {
   document.getElementById('new-m-date').value='';
   toast('成員已新增','success');
 };
-window.updateMember = (name) => {
 window.updateMember = async (name) => {
   const m = gM().find(x=>x.name===name); if(!m) return;
   const newPts = parseFloat(document.getElementById('pts-'+name).value)||0;
@@ -1071,7 +1070,8 @@ const approveReport = async (r) => {
   });
   try {
     if(r._path){
-      await set(ref(db, `${r._path}/status`), 'approved');
+      const { _path, ...payload } = r;
+      await set(ref(db, _path), { ...payload, status:'approved' });
     } else {
       const target = allReports.find(x => x.id === r.id);
       if(target) target.status = 'approved';
@@ -1092,7 +1092,8 @@ const rejectReport = async (r) => {
   if(!r) return toast('找不到該申報','error');
   try {
     if(r._path){
-      await set(ref(db, `${r._path}/status`), 'rejected');
+      const { _path, ...payload } = r;
+      await set(ref(db, _path), { ...payload, status:'rejected' });
     } else {
       const allReports = gRp();
       const target = allReports.find(x => x.id === r.id);
